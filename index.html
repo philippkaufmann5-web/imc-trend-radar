@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMC Trend Radar · Weiterbildung HSG</title>
+  <meta name="description" content="Trend Radar für die berufsbegleitende Weiterbildung des Instituts für Marketing und Customer Insight, Universität St.Gallen." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span>IMC Trend Radar<small>Institut für Marketing und Customer Insight · HSG</small></span>
+      </div>
+      <div class="topbar__actions">
+        <button class="btn icon-btn btn--ghost" id="settings-btn" title="Sucheinstellungen" aria-label="Sucheinstellungen">⚙</button>
+        <button class="btn btn--primary" id="refresh-btn">Aktualisieren</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero__accent" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow">From insight to impact</p>
+      <h1>Trends für die Weiterbildung, laufend recherchiert.</h1>
+      <p class="lede">Was sich in Marketing, Vertrieb, Kommunikation und Einkauf bewegt – belegt, eingeordnet und auf die IMC-Programme gemappt.</p>
+      <div class="hero__meta">
+        <span>Stand: <b id="meta-date">—</b></span>
+        <span class="dot-sep">·</span>
+        <span>Recherche: <b id="meta-freq">wöchentlich</b></span>
+        <span class="dot-sep">·</span>
+        <span><b id="meta-count">—</b> Trends in 4 Clustern</span>
+      </div>
+    </div>
+  </section>
+
+  <nav class="filters" aria-label="Nach Use Case filtern">
+    <div class="wrap filters__inner" id="filters">
+      <span class="filters__label">Use Case:</span>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="banner" id="banner">
+      <span id="banner-text"></span>
+      <button id="banner-action" type="button"></button>
+    </div>
+  </div>
+
+  <main class="wrap" id="rows" aria-live="polite"></main>
+
+  <section class="subscribe" id="anmelden">
+    <div class="wrap subscribe__grid">
+      <div>
+        <h2>Auf dem Laufenden bleiben</h2>
+        <p>Wählen Sie die Use Cases, die für Sie zählen. Sobald die nächste Recherche neue Trends findet, erhalten Sie eine kurze E-Mail.</p>
+      </div>
+      <div>
+        <div class="field">
+          <label class="lbl" for="email">E-Mail-Adresse</label>
+          <input type="email" id="email" placeholder="vorname.nachname@unisg.ch" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label class="lbl">Worüber möchten Sie informiert werden?</label>
+          <div class="checks" id="usecase-checks"></div>
+        </div>
+        <div class="field">
+          <label class="lbl">Optional: nur bestimmte Cluster</label>
+          <div class="checks" id="cluster-checks"></div>
+        </div>
+        <button class="btn btn--primary" id="subscribe-btn">Anmelden</button>
+        <p class="form-msg" id="form-msg" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="year"></span> Institut für Marketing und Customer Insight, Universität St.Gallen</span>
+      <span>Quellen werden automatisiert recherchiert – bitte vor Verwendung prüfen.</span>
+    </div>
+  </footer>
+
+  <!-- Trend detail modal -->
+  <div class="overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal" style="max-width: 480px">
+      <button class="btn icon-btn btn--ghost modal__close" id="settings-close" aria-label="Schliessen">✕</button>
+      <h2 id="settings-title" style="font-size: 22px">Sucheinstellungen</h2>
+      <p class="modal__summary" style="font-size: 14.5px">Wie oft soll das Web nach neuen Trends durchsucht werden?</p>
+      <div class="radio-row" id="freq-radios"></div>
+      <button class="btn btn--primary" id="settings-save" style="margin-top: 16px">Speichern</button>
+      <p class="note">Globale Einstellung. Der geplante Lauf prüft täglich, ob gemäss dieser Frequenz eine neue Recherche fällig ist.</p>
+      <p class="form-msg" id="settings-msg" role="status"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>

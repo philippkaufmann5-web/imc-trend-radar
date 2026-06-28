@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMC Trend Radar · Weiterbildung HSG</title>
+  <meta name="description" content="Trend Radar für die berufsbegleitende Weiterbildung des Instituts für Marketing und Customer Insight, Universität St.Gallen." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+:root {
+  --hsg-green: #007a3d;
+  --hsg-green-dark: #0c4a2c;
+  --hsg-green-deep: #06351f;
+  --hsg-green-bright: #36b37e;
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --ink: #16221b;
+  --muted: #5b6a61;
+  --hairline: rgba(12, 74, 44, 0.12);
+  --hairline-strong: rgba(12, 74, 44, 0.2);
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(6, 53, 31, 0.05), 0 4px 14px rgba(6, 53, 31, 0.07);
+  --shadow-lift: 0 6px 16px rgba(6, 53, 31, 0.1), 0 16px 40px rgba(6, 53, 31, 0.12);
+  --maxw: 1180px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--hsg-green); outline-offset: 2px; border-radius: 4px; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 40; background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+}
+.topbar__inner { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 600; letter-spacing: -0.01em; }
+.brand__mark { width: 26px; height: 26px; border-radius: 5px; background: var(--hsg-green); position: relative; flex: none; }
+.brand__mark::after {
+  content: ""; position: absolute; right: 0; bottom: 0;
+  border-width: 0 0 13px 13px; border-style: solid;
+  border-color: transparent transparent var(--hsg-green-bright) transparent;
+}
+.brand small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.topbar__actions { display: flex; align-items: center; gap: 10px; }
+
+.btn {
+  border: 1px solid var(--hairline-strong); background: var(--surface); color: var(--ink);
+  padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.btn:hover { background: #f0efe9; }
+.btn--primary { background: var(--hsg-green); color: #fff; border-color: transparent; }
+.btn--primary:hover { background: #00682f; }
+.btn--ghost { background: transparent; border-color: transparent; }
+.btn--ghost:hover { background: #f0efe9; }
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.icon-btn { width: 40px; height: 40px; padding: 0; justify-content: center; }
+
+/* ---------- Header band (flat HSG green) ---------- */
+.hero { position: relative; overflow: hidden; color: #eafff2; background: var(--hsg-green-dark); }
+.hero__accent {
+  position: absolute; top: 0; right: 0; height: 100%; width: 38%;
+  background: var(--hsg-green-deep);
+  clip-path: polygon(36% 0, 100% 0, 100% 100%, 0% 100%); pointer-events: none;
+}
+.hero__inner { position: relative; padding: 52px 0 56px; max-width: 720px; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; color: var(--hsg-green-bright); font-weight: 600; margin: 0 0 16px; }
+.hero h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.08; letter-spacing: -0.022em; font-weight: 700; margin: 0 0 16px; }
+.hero p.lede { font-size: clamp(15px, 1.8vw, 18px); color: #cfe9d8; max-width: 560px; margin: 0 0 26px; }
+.hero__meta { display: flex; flex-wrap: wrap; gap: 9px 22px; font-size: 13.5px; color: #a4c9b2; }
+.hero__meta b { color: #eafff2; font-weight: 600; }
+.dot-sep { opacity: 0.5; }
+
+/* ---------- Filters ---------- */
+.filters { position: sticky; top: 62px; z-index: 30; background: rgba(245, 244, 239, 0.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--hairline); padding: 13px 0; }
+.filters__inner { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.filters__label { font-size: 12.5px; color: var(--muted); margin-right: 2px; }
+.chip { border: 1px solid var(--hairline-strong); background: var(--surface); color: var(--ink); padding: 7px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500; transition: all 0.12s ease; }
+.chip:hover { border-color: var(--hsg-green); }
+.chip[aria-pressed="true"] { background: var(--hsg-green-dark); color: #fff; border-color: transparent; }
+.chip .c { opacity: 0.6; font-weight: 400; margin-left: 4px; }
+
+/* ---------- Banner ---------- */
+.banner { display: none; margin: 18px 0 0; padding: 12px 16px; border-radius: 10px; background: #fff7e6; border: 1px solid #f0d79a; color: #7a5a14; font-size: 13.5px; }
+.banner.show { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.banner button { font-size: 13px; font-weight: 600; color: #7a5a14; background: none; border: none; text-decoration: underline; }
+
+/* ---------- Cluster sections + grid ---------- */
+main { padding: 14px 0 60px; }
+.cluster { margin: 34px 0; }
+.cluster__head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 2px solid var(--hsg-green); margin-bottom: 20px; }
+.cluster__head h2 { font-size: 22px; letter-spacing: -0.02em; font-weight: 600; margin: 0; }
+.cluster__progs { font-size: 12.5px; color: var(--muted); }
+.cluster__count { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(278px, 1fr)); gap: 16px; }
+.cluster--empty { display: none; }
+
+/* ---------- Card ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px; cursor: pointer; text-align: left;
+  display: flex; flex-direction: column; gap: 11px; min-height: 210px;
+  transition: transform 0.13s ease, box-shadow 0.13s ease, border-color 0.13s ease;
+}
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--hairline-strong); }
+.card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card h3 { font-size: 16.5px; line-height: 1.3; letter-spacing: -0.01em; font-weight: 600; margin: 0; }
+.card__summary { font-size: 13.5px; color: var(--muted); margin: 0; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+
+.pill { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.pill--Hype { background: #fbe9cf; color: #8a5a0c; }
+.pill--Aufkommend { background: #dcefe2; color: #1c6b3c; }
+.pill--Etabliert { background: #dfe9ed; color: #34505d; }
+.tag { font-size: 11.5px; font-weight: 500; color: var(--hsg-green-dark); background: #e7f2eb; padding: 3px 9px; border-radius: 6px; }
+.rel { display: inline-flex; gap: 3px; align-items: center; }
+.rel i { width: 6px; height: 6px; border-radius: 50%; background: var(--hairline-strong); }
+.rel i.on { background: var(--hsg-green); }
+
+.card--skeleton { cursor: default; }
+.sk { background: linear-gradient(90deg, #ececec 25%, #f5f5f5 37%, #ececec 63%); background-size: 400% 100%; animation: sh 1.3s ease infinite; border-radius: 6px; }
+@keyframes sh { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+/* ---------- Modal ---------- */
+.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6, 30, 18, 0.55); display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 16px; max-width: 620px; width: 100%; box-shadow: var(--shadow-lift); padding: 30px; position: relative; animation: pop 0.16s ease; }
+@keyframes pop { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal__close { position: absolute; top: 16px; right: 16px; }
+.modal__badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.modal h2 { font-size: 25px; line-height: 1.16; letter-spacing: -0.02em; margin: 0 0 14px; padding-right: 30px; }
+.modal__summary { font-size: 16px; color: #2c382f; margin: 0 0 6px; }
+.modal h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 22px 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip--prog { background: #eef3ef; border: 1px solid var(--hairline); border-radius: 8px; padding: 5px 10px; font-size: 13px; }
+.reco { border-left: 3px solid var(--hsg-green); background: #f0f7f2; padding: 12px 14px; border-radius: 0 10px 10px 0; font-size: 14.5px; }
+.sources { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.sources a { display: flex; align-items: center; gap: 10px; text-decoration: none; font-size: 14px; padding: 9px 12px; border: 1px solid var(--hairline); border-radius: 10px; transition: border-color 0.12s; }
+.sources a:hover { border-color: var(--hsg-green); }
+.src-type { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hsg-green-dark); background: #e7f2eb; padding: 2px 7px; border-radius: 5px; flex: none; }
+.src-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.src-ext { color: var(--muted); flex: none; }
+
+/* ---------- Subscribe ---------- */
+.subscribe { background: var(--surface); border-top: 1px solid var(--hairline); padding: 60px 0; }
+.subscribe__grid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px; align-items: start; }
+.subscribe h2 { font-size: 28px; letter-spacing: -0.02em; margin: 0 0 12px; }
+.subscribe p { color: var(--muted); margin: 0; max-width: 360px; }
+.field { margin: 0 0 18px; }
+.field label.lbl { display: block; font-size: 13px; font-weight: 600; margin: 0 0 8px; }
+input[type="email"] { width: 100%; padding: 13px 15px; border: 1px solid var(--hairline-strong); border-radius: 10px; font-size: 15px; font-family: inherit; background: var(--bg); }
+input[type="email"]:focus { outline: none; border-color: var(--hsg-green); background: #fff; }
+.checks { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.check { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid var(--hairline); border-radius: 10px; font-size: 13.5px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+.check:hover { border-color: var(--hsg-green); }
+.check input { accent-color: var(--hsg-green); width: 16px; height: 16px; }
+.form-msg { font-size: 13.5px; margin: 12px 0 0; min-height: 18px; }
+.form-msg.ok { color: var(--hsg-green); }
+.form-msg.err { color: #b3261e; }
+
+/* ---------- Footer ---------- */
+footer { padding: 32px 0 50px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--hairline); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; }
+
+/* ---------- Toast ---------- */
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: var(--hsg-green-dark); color: #eafff2; padding: 13px 20px; border-radius: 11px; font-size: 14px; box-shadow: var(--shadow-lift); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 80; max-width: 90vw; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- Settings radios ---------- */
+.radio-row { display: flex; flex-direction: column; gap: 10px; margin: 6px 0 4px; }
+.radio { display: flex; align-items: flex-start; gap: 11px; padding: 13px 15px; border: 1px solid var(--hairline); border-radius: 12px; cursor: pointer; transition: border-color 0.12s; }
+.radio:hover { border-color: var(--hsg-green); }
+.radio input { accent-color: var(--hsg-green); margin-top: 3px; }
+.radio b { display: block; font-size: 14.5px; }
+.radio span { font-size: 12.5px; color: var(--muted); }
+.note { font-size: 12px; color: var(--muted); margin: 14px 0 0; }
+
+@media (max-width: 820px) {
+  .subscribe__grid { grid-template-columns: 1fr; gap: 28px; }
+  .checks { grid-template-columns: 1fr; }
+  .hero__inner { padding: 42px 0 46px; }
+  .hero__accent { display: none; }
+  .wrap { padding: 0 18px; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto; } }
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span>IMC Trend Radar<small>Institut für Marketing und Customer Insight · HSG</small></span>
+      </div>
+      <div class="topbar__actions">
+        <button class="btn icon-btn btn--ghost" id="settings-btn" title="Sucheinstellungen" aria-label="Sucheinstellungen">⚙</button>
+        <button class="btn btn--primary" id="refresh-btn">Aktualisieren</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero__accent" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <p class="eyebrow">From insight to impact</p>
+      <h1>Trends für die Weiterbildung, laufend recherchiert.</h1>
+      <p class="lede">Was sich in Marketing, Vertrieb, Kommunikation und Einkauf bewegt – belegt, eingeordnet und auf die IMC-Programme gemappt.</p>
+      <div class="hero__meta">
+        <span>Stand: <b id="meta-date">—</b></span>
+        <span class="dot-sep">·</span>
+        <span>Recherche: <b id="meta-freq">wöchentlich</b></span>
+        <span class="dot-sep">·</span>
+        <span><b id="meta-count">—</b> Trends in 4 Clustern</span>
+      </div>
+    </div>
+  </section>
+
+  <nav class="filters" aria-label="Nach Use Case filtern">
+    <div class="wrap filters__inner" id="filters">
+      <span class="filters__label">Use Case:</span>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="banner" id="banner">
+      <span id="banner-text"></span>
+      <button id="banner-action" type="button"></button>
+    </div>
+  </div>
+
+  <main class="wrap" id="rows" aria-live="polite"></main>
+
+  <section class="subscribe" id="anmelden">
+    <div class="wrap subscribe__grid">
+      <div>
+        <h2>Auf dem Laufenden bleiben</h2>
+        <p>Wählen Sie die Use Cases, die für Sie zählen. Sobald die nächste Recherche neue Trends findet, erhalten Sie eine kurze E-Mail.</p>
+      </div>
+      <div>
+        <div class="field">
+          <label class="lbl" for="email">E-Mail-Adresse</label>
+          <input type="email" id="email" placeholder="vorname.nachname@unisg.ch" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label class="lbl">Worüber möchten Sie informiert werden?</label>
+          <div class="checks" id="usecase-checks"></div>
+        </div>
+        <div class="field">
+          <label class="lbl">Optional: nur bestimmte Cluster</label>
+          <div class="checks" id="cluster-checks"></div>
+        </div>
+        <button class="btn btn--primary" id="subscribe-btn">Anmelden</button>
+        <p class="form-msg" id="form-msg" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="year"></span> Institut für Marketing und Customer Insight, Universität St.Gallen</span>
+      <span>Quellen werden automatisiert recherchiert – bitte vor Verwendung prüfen.</span>
+    </div>
+  </footer>
+
+  <!-- Trend detail modal -->
+  <div class="overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal" style="max-width: 480px">
+      <button class="btn icon-btn btn--ghost modal__close" id="settings-close" aria-label="Schliessen">✕</button>
+      <h2 id="settings-title" style="font-size: 22px">Sucheinstellungen</h2>
+      <p class="modal__summary" style="font-size: 14.5px">Wie oft soll das Web nach neuen Trends durchsucht werden?</p>
+      <div class="radio-row" id="freq-radios"></div>
+      <button class="btn btn--primary" id="settings-save" style="margin-top: 16px">Speichern</button>
+      <p class="note">Globale Einstellung. Der geplante Lauf prüft täglich, ob gemäss dieser Frequenz eine neue Recherche fällig ist.</p>
+      <p class="form-msg" id="settings-msg" role="status"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+/* IMC Trend Radar – frontend logic.
+   Renders a clear, grouped overview of trends per Weiterbildungs-Cluster,
+   with use-case filtering, a detail view, email signup and a search-frequency
+   setting. Ships with sample data so the page is never empty; live data from
+   the Netlify functions replaces it when available. */
+
+const USE_CASES = [
+  { id: "scouting", label: "Trend-Scouting" },
+  { id: "gap", label: "Curriculum-Gap" },
+  { id: "wettbewerb", label: "Wettbewerb" },
+  { id: "nachfrage", label: "Nachfrage-Signale" },
+  { id: "synthese", label: "Synthese" },
+];
+const UC_LABEL = Object.fromEntries(USE_CASES.map((u) => [u.id, u.label]));
+
+const CLUSTERS = [
+  { id: "marketing", label: "Marketing", programs: ["DAS Marketing Executive", "CAS Marketing Management", "Digital Marketing Academy", "Intensivseminar Marketing Intelligence"] },
+  { id: "sales", label: "Sales & Vertrieb", programs: ["DAS Sales Executive", "CAS Sales Management", "Digitalisierung & Nachhaltigkeit im Vertrieb"] },
+  { id: "kommunikation", label: "Kommunikation", programs: ["CAS Kommunikation und Management"] },
+  { id: "einkauf", label: "Einkauf & Procurement", programs: ["CAS Strategisches Einkaufsmanagement"] },
+];
+
+/* Sample seed data (grounded in 2026 research). Replaced by live data when the
+   Netlify functions are reachable. */
+const SAMPLE = {
+  generatedAt: null,
+  clusters: [
+    { id: "marketing", label: "Marketing", programs: CLUSTERS[0].programs, trends: [
+      { id: "m0", cluster: "marketing", title: "Agentische Marketing-Workflows", useCase: "scouting", maturity: "Aufkommend", horizon: "12–24 Monate", relevance: 5,
+        summary: "Marketing verschiebt sich von KI-Assistenz zu Agenten, die Kampagnen orchestrieren. Laut BCG sprechen 96 % der CMOs von Transformation, doch nur rund ein Drittel hat sie tatsächlich umgesetzt.",
+        programs: ["DAS Marketing Executive", "Digital Marketing Academy"],
+        recommendation: "Neues Modul „Agentic Marketing Operations“ in der Digital Marketing Academy – mit Fokus auf Orchestrierung statt Einzeltools.",
+        sources: [ { title: "BCG: Agentic Marketing Transformation", url: "https://www.bcg.com/publications/2026/making-the-agentic-marketing-transformation-a-reality", type: "Report" }, { title: "Demand Gen Report: 2026 B2B Trends", url: "https://www.demandgenreport.com/", type: "Medien" } ] },
+      { id: "m1", cluster: "marketing", title: "Answer Engine Optimization (AEO/GEO)", useCase: "gap", maturity: "Aufkommend", horizon: "Jetzt", relevance: 5,
+        summary: "Klassisches SEO weicht der Optimierung für KI-Antwortmaschinen. Marken brauchen maschinenlesbare Daten, damit sie in generativen Kanälen überhaupt auftauchen.",
+        programs: ["Digital Marketing Academy", "CAS Marketing Management"],
+        recommendation: "Die SEO-Einheit der Digital Marketing Academy um AEO/GEO erweitern – aktuell eine klare Curriculum-Lücke.",
+        sources: [ { title: "commercetools: Agentic Commerce 2026", url: "https://commercetools.com/blog/ai-trends-shaping-agentic-commerce", type: "Anbieter" }, { title: "Improvado: B2B Marketing Trends", url: "https://improvado.io/blog/b2b-marketing-trends", type: "Anbieter" } ] },
+      { id: "m2", cluster: "marketing", title: "Personalisierung in grossem Massstab", useCase: "scouting", maturity: "Aufkommend", horizon: "12–24 Monate", relevance: 4,
+        summary: "Rund ein Viertel der Marketer nutzt KI gezielt, um Botschaften zu schärfen und Kampagnen individueller auszuspielen – weg von One-to-many.",
+        programs: ["CAS Marketing Management"],
+        recommendation: "Fallstudien-Block zu Personalisierung & First-Party-Daten im CAS Marketing Management ergänzen.",
+        sources: [ { title: "Demand Gen Report: AI in Marketing", url: "https://www.demandgenreport.com/", type: "Medien" } ] },
+      { id: "m3", cluster: "marketing", title: "Datenqualität als Engpass", useCase: "gap", maturity: "Etabliert", horizon: "Jetzt", relevance: 4,
+        summary: "Unvollständige Daten gelten als grösste Hürde für sichere Marketing-Entscheidungen. Ohne saubere Datenbasis bleibt jede KI-Initiative Stückwerk.",
+        programs: ["Intensivseminar Marketing Intelligence"],
+        recommendation: "Marketing Intelligence stärker auf Data-Governance und Datenqualität ausrichten.",
+        sources: [ { title: "Demand Gen Report: Data Barriers", url: "https://www.demandgenreport.com/", type: "Medien" } ] },
+    ] },
+    { id: "sales", label: "Sales & Vertrieb", programs: CLUSTERS[1].programs, trends: [
+      { id: "s0", cluster: "sales", title: "KI als Recherche-Layer im Vertrieb", useCase: "scouting", maturity: "Aufkommend", horizon: "12–24 Monate", relevance: 5,
+        summary: "Gartner erwartet, dass bis 2027 die grosse Mehrheit der Verkäufer-Recherchen mit KI beginnt – gegenüber einem kleinen Anteil 2024. Der Rechercheprozess wird neu gedacht.",
+        programs: ["DAS Sales Executive", "CAS Sales Management"],
+        recommendation: "Modul „KI-gestützte Verkaufsvorbereitung“ ins DAS Sales Executive aufnehmen.",
+        sources: [ { title: "Gartner via Demand Gen Report", url: "https://www.demandgenreport.com/", type: "Medien" } ] },
+      { id: "s1", cluster: "sales", title: "Mensch schliesst die Vertrauenslücke", useCase: "synthese", maturity: "Etabliert", horizon: "Jetzt", relevance: 4,
+        summary: "Käufer validieren KI-Erkenntnisse weiterhin mehrheitlich mit einem Vertriebsmitarbeiter. Empathie, Urteil und Wertargumentation bleiben menschliche Stärken.",
+        programs: ["CAS Sales Management"],
+        recommendation: "Narrativ „KI recherchiert, Mensch überzeugt“ als roten Faden im CAS Sales Management verankern.",
+        sources: [ { title: "Gartner: AI & B2B Buying", url: "https://www.demandgenreport.com/", type: "Medien" } ] },
+      { id: "s2", cluster: "sales", title: "Buyer Agents & A2B-Verhandlung", useCase: "scouting", maturity: "Hype", horizon: "12–24 Monate", relevance: 4,
+        summary: "B2B-Käufer setzen zunehmend Agenten ein; Anbieter reagieren mit eigenen Verkaufs-Agenten. „Agent-to-Business“ verändert die Verhandlungsdynamik.",
+        programs: ["DAS Sales Executive"],
+        recommendation: "Trend beobachten; Pilot-Workshop statt sofortigem Vollmodul.",
+        sources: [ { title: "Tredence: Agentic Commerce Trends", url: "https://www.tredence.com/blog/agentic-commerce-trends", type: "Anbieter" } ] },
+      { id: "s3", cluster: "sales", title: "Nachhaltigkeit als Vertriebsargument", useCase: "nachfrage", maturity: "Aufkommend", horizon: "12–24 Monate", relevance: 3,
+        summary: "Nachhaltigkeit wandert vom Compliance-Thema zum echten Verkaufsargument – besonders in industriellen B2B-Beziehungen.",
+        programs: ["Digitalisierung & Nachhaltigkeit im Vertrieb"],
+        recommendation: "Bestehendes Intensivseminar um Verkaufsargumentation rund um Nachhaltigkeit erweitern.",
+        sources: [ { title: "Demand Gen Report", url: "https://www.demandgenreport.com/", type: "Medien" } ] },
+    ] },
+    { id: "kommunikation", label: "Kommunikation", programs: CLUSTERS[2].programs, trends: [
+      { id: "k0", cluster: "kommunikation", title: "GenAI verändert Marken-Discovery", useCase: "scouting", maturity: "Aufkommend", horizon: "Jetzt", relevance: 4,
+        summary: "Eine grosse Mehrheit der CMOs sieht, dass GenAI verändert, wie Konsumenten Marken entdecken und bewerten. Kommunikation muss für KI-Kanäle gedacht werden.",
+        programs: ["CAS Kommunikation und Management"],
+        recommendation: "Einheit „Markenkommunikation im KI-Zeitalter“ ins CAS Kommunikation aufnehmen.",
+        sources: [ { title: "BCG: CMO Survey 2026", url: "https://www.bcg.com/publications/2026/making-the-agentic-marketing-transformation-a-reality", type: "Report" } ] },
+      { id: "k1", cluster: "kommunikation", title: "KI-Transparenz als Pflichtthema", useCase: "gap", maturity: "Aufkommend", horizon: "12–24 Monate", relevance: 3,
+        summary: "Enterprise-Zielgruppen verlangen zunehmend Transparenz darüber, was KI-erzeugt ist. Glaubwürdigkeit wird zum Kommunikationsthema.",
+        programs: ["CAS Kommunikation und Management"],
+        recommendation: "Modul-Baustein zu KI-Transparenz und Authentizität ergänzen.",
+        sources: [ { title: "Improvado: B2B Trends", url: "https://improvado.io/blog/b2b-marketing-trends", type: "Anbieter" } ] },
+      { id: "k2", cluster: "kommunikation", title: "Distribution schlägt Erstellung", useCase: "nachfrage", maturity: "Etabliert", horizon: "Jetzt", relevance: 3,
+        summary: "Viele Teams überinvestieren in Content-Produktion und unterinvestieren in Verteilung. Reichweite entscheidet stärker als Produktionsmenge.",
+        programs: ["CAS Kommunikation und Management"],
+        recommendation: "Praxisblock zu Content-Distribution und Kanalstrategie aufnehmen.",
+        sources: [ { title: "Improvado: B2B Trends", url: "https://improvado.io/blog/b2b-marketing-trends", type: "Anbieter" } ] },
+    ] },
+    { id: "einkauf", label: "Einkauf & Procurement", programs: CLUSTERS[3].programs, trends: [
+      { id: "e0", cluster: "einkauf", title: "Agent-vermittelter B2B-Einkauf", useCase: "scouting", maturity: "Hype", horizon: "Langfristig", relevance: 4,
+        summary: "Gartner prognostiziert, dass bis 2028 ein Grossteil des B2B-Einkaufs über KI-Agenten vermittelt wird. Das verändert Einkaufsprozesse und Lieferantenkontakt grundlegend.",
+        programs: ["CAS Strategisches Einkaufsmanagement"],
+        recommendation: "Zukunftsmodul „Agentic Procurement“ als Ausblick ins CAS Einkauf aufnehmen.",
+        sources: [ { title: "Gartner: Strategic Predictions 2026", url: "https://www.gartner.com/en/articles/strategic-predictions-for-2026", type: "Report" } ] },
+      { id: "e1", cluster: "einkauf", title: "Governance & Datenqualität", useCase: "gap", maturity: "Aufkommend", horizon: "Jetzt", relevance: 4,
+        summary: "Mit zunehmender Automatisierung im Einkauf werden Governance, Datenqualität und Kontrolle zu Pflichtthemen – sonst delegiert man Risiko an Agenten.",
+        programs: ["CAS Strategisches Einkaufsmanagement"],
+        recommendation: "Governance-Baustein im CAS Einkauf verbindlich verankern.",
+        sources: [ { title: "Gartner: Strategic Predictions 2026", url: "https://www.gartner.com/en/articles/strategic-predictions-for-2026", type: "Report" } ] },
+      { id: "e2", cluster: "einkauf", title: "Lieferketten-Resilienz & Sovereign AI", useCase: "scouting", maturity: "Aufkommend", horizon: "Langfristig", relevance: 3,
+        summary: "Geopolitik und regionalisierte KI-Plattformen rücken Resilienz und Souveränität in den Mittelpunkt strategischer Einkaufsentscheidungen.",
+        programs: ["CAS Strategisches Einkaufsmanagement"],
+        recommendation: "Fallstudie zu Resilienz und Sovereign-AI-Abhängigkeiten ergänzen.",
+        sources: [ { title: "Gartner: Strategic Predictions 2026", url: "https://www.gartner.com/en/articles/strategic-predictions-for-2026", type: "Report" } ] },
+    ] },
+  ],
+};
+
+const state = { data: SAMPLE, filter: "all", live: false };
+const $ = (s) => document.querySelector(s);
+
+/* ---------- rendering ---------- */
+function relDots(n) {
+  let h = '<span class="rel" title="Relevanz ' + n + '/5">';
+  for (let i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? "on" : "") + '"></i>';
+  return h + "</span>";
+}
+
+function cardHTML(t) {
+  return (
+    '<button class="card" data-id="' + t.id + '">' +
+      '<div class="card__top"><span class="pill pill--' + t.maturity + '">' + t.maturity + "</span>" + relDots(t.relevance) + "</div>" +
+      "<h3>" + esc(t.title) + "</h3>" +
+      '<p class="card__summary">' + esc(t.summary) + "</p>" +
+      '<div class="card__foot"><span class="tag">' + UC_LABEL[t.useCase] + "</span><span>" + esc(t.horizon) + "</span></div>" +
+    "</button>"
+  );
+}
+
+function render() {
+  const root = $("#rows");
+  root.innerHTML = "";
+  let shown = 0;
+  for (const c of state.data.clusters) {
+    const trends = c.trends.filter((t) => state.filter === "all" || t.useCase === state.filter);
+    shown += trends.length;
+    const sec = document.createElement("section");
+    sec.className = "cluster" + (trends.length ? "" : " cluster--empty");
+    sec.innerHTML =
+      '<div class="cluster__head"><h2>' + esc(c.label) + "</h2>" +
+      '<span class="cluster__progs">' + c.programs.length + " Programme · " + esc(c.programs.slice(0, 2).join(", ")) + (c.programs.length > 2 ? " …" : "") + "</span>" +
+      '<span class="cluster__count">' + trends.length + " Trends</span></div>" +
+      '<div class="grid">' + trends.map(cardHTML).join("") + "</div>";
+    root.appendChild(sec);
+  }
+  $("#meta-count").textContent = state.data.clusters.reduce((n, c) => n + c.trends.length, 0);
+  $("#meta-date").textContent = state.data.generatedAt
+    ? new Date(state.data.generatedAt).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" })
+    : "Beispieldaten";
+  root.querySelectorAll(".card").forEach((el) => el.addEventListener("click", () => openModal(el.dataset.id)));
+}
+
+function renderFilters() {
+  const box = $("#filters");
+  const all = [{ id: "all", label: "Alle" }, ...USE_CASES];
+  box.querySelectorAll(".chip").forEach((c) => c.remove());
+  all.forEach((u) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.setAttribute("aria-pressed", String(state.filter === u.id));
+    b.textContent = u.label;
+    b.addEventListener("click", () => { state.filter = u.id; renderFilters(); render(); });
+    box.appendChild(b);
+  });
+}
+
+/* ---------- modal ---------- */
+function findTrend(id) {
+  for (const c of state.data.clusters) { const t = c.trends.find((x) => x.id === id); if (t) return t; }
+}
+function openModal(id) {
+  const t = findTrend(id);
+  if (!t) return;
+  const sources = t.sources && t.sources.length
+    ? '<h4>Quellen</h4><ul class="sources">' + t.sources.map((s) =>
+        '<a href="' + esc(s.url) + '" target="_blank" rel="noopener"><span class="src-type">' + esc(s.type) + '</span><span class="src-title">' + esc(s.title) + '</span><span class="src-ext">↗</span></a>'
+      ).join("") + "</ul>"
+    : "";
+  $("#modal").innerHTML =
+    '<button class="btn icon-btn btn--ghost modal__close" id="modal-close" aria-label="Schliessen">✕</button>' +
+    '<div class="modal__badges"><span class="pill pill--' + t.maturity + '">' + t.maturity + "</span>" +
+      '<span class="tag">' + UC_LABEL[t.useCase] + "</span>" +
+      '<span class="tag">Horizont: ' + esc(t.horizon) + "</span>" +
+      '<span class="tag">Relevanz ' + t.relevance + "/5</span></div>" +
+    '<h2 id="modal-title">' + esc(t.title) + "</h2>" +
+    '<p class="modal__summary">' + esc(t.summary) + "</p>" +
+    "<h4>Betroffene Programme</h4><div class=\"chips\">" + (t.programs || []).map((p) => '<span class="chip--prog">' + esc(p) + "</span>").join("") + "</div>" +
+    "<h4>Empfehlung fürs Curriculum</h4><div class=\"reco\">" + esc(t.recommendation) + "</div>" +
+    sources;
+  $("#modal-overlay").classList.add("open");
+  $("#modal-close").addEventListener("click", closeModal);
+}
+function closeModal() { $("#modal-overlay").classList.remove("open"); }
+
+/* ---------- subscribe + settings UI ---------- */
+function renderForm() {
+  $("#usecase-checks").innerHTML = USE_CASES.map((u) =>
+    '<label class="check"><input type="checkbox" value="' + u.id + '" name="uc">' + u.label + "</label>").join("");
+  $("#cluster-checks").innerHTML = CLUSTERS.map((c) =>
+    '<label class="check"><input type="checkbox" value="' + c.id + '" name="cl">' + esc(c.label) + "</label>").join("");
+  $("#freq-radios").innerHTML = [
+    ["daily", "Täglich", "Für sich schnell bewegende Themen."],
+    ["weekly", "Wöchentlich", "Empfohlen – guter Rhythmus für Trends."],
+    ["monthly", "Monatlich", "Ruhiger Takt, weniger API-Kosten."],
+  ].map(([v, t, d]) =>
+    '<label class="radio"><input type="radio" name="freq" value="' + v + '"><span><b>' + t + "</b><span>" + d + "</span></span></label>").join("");
+}
+
+/* ---------- network helpers (degrade gracefully offline) ---------- */
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+async function loadLive() {
+  try {
+    const data = await api("/api/trends");
+    if (data.status === "ready") {
+      state.data = data; state.live = true; render(); hideBanner();
+    } else {
+      showBanner("Noch keine Live-Daten vorhanden – Sie sehen Beispieldaten.", "Jetzt recherchieren", triggerRefresh);
+    }
+  } catch {
+    showBanner("Vorschau mit Beispieldaten. Die Live-Recherche ist nach dem Netlify-Deployment aktiv.", "", null);
+  }
+  try {
+    const s = await api("/api/settings");
+    $("#meta-freq").textContent = { daily: "täglich", weekly: "wöchentlich", monthly: "monatlich" }[s.frequency] || "wöchentlich";
+    const r = document.querySelector('input[name="freq"][value="' + s.frequency + '"]');
+    if (r) r.checked = true;
+  } catch { /* offline */ }
+}
+
+let polling = false;
+async function triggerRefresh() {
+  if (polling) return;
+  const btn = $("#refresh-btn");
+  btn.disabled = true; btn.textContent = "Recherche läuft …"; polling = true;
+  try {
+    await fetch("/api/refresh", { method: "POST" });
+    toast("Web-Recherche gestartet – das dauert ein bis zwei Minuten.");
+    const before = state.data.generatedAt;
+    let tries = 0;
+    const iv = setInterval(async () => {
+      tries++;
+      try {
+        const data = await api("/api/trends");
+        if (data.status === "ready" && data.generatedAt !== before) {
+          state.data = data; state.live = true; render(); hideBanner();
+          toast("Trends aktualisiert.");
+          clearInterval(iv); resetRefresh();
+        }
+      } catch { /* keep polling */ }
+      if (tries >= 24) { clearInterval(iv); resetRefresh(); toast("Recherche dauert länger als erwartet – bitte später neu laden."); }
+    }, 8000);
+  } catch {
+    toast("Live-Recherche erst nach dem Deployment verfügbar.");
+    resetRefresh();
+  }
+}
+function resetRefresh() { const b = $("#refresh-btn"); b.disabled = false; b.textContent = "Aktualisieren"; polling = false; }
+
+async function submitSubscribe() {
+  const msg = $("#form-msg"); msg.className = "form-msg"; msg.textContent = "";
+  const email = $("#email").value.trim();
+  const useCases = [...document.querySelectorAll('input[name="uc"]:checked')].map((c) => c.value);
+  const clusters = [...document.querySelectorAll('input[name="cl"]:checked')].map((c) => c.value);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.className = "form-msg err"; msg.textContent = "Bitte eine gültige E-Mail-Adresse angeben."; return; }
+  if (!useCases.length) { msg.className = "form-msg err"; msg.textContent = "Bitte mindestens einen Use Case auswählen."; return; }
+  try {
+    await api("/api/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, useCases, clusters }) });
+    msg.className = "form-msg ok"; msg.textContent = "Angemeldet. Sie erhalten künftig Updates zu den gewählten Bereichen.";
+    $("#email").value = "";
+  } catch {
+    msg.className = "form-msg err"; msg.textContent = "Anmeldung erst nach dem Deployment möglich (Vorschau).";
+  }
+}
+
+async function saveSettings() {
+  const msg = $("#settings-msg"); msg.className = "form-msg"; msg.textContent = "";
+  const freq = document.querySelector('input[name="freq"]:checked');
+  if (!freq) { msg.className = "form-msg err"; msg.textContent = "Bitte eine Frequenz wählen."; return; }
+  try {
+    const s = await api("/api/settings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ frequency: freq.value }) });
+    $("#meta-freq").textContent = { daily: "täglich", weekly: "wöchentlich", monthly: "monatlich" }[s.frequency];
+    msg.className = "form-msg ok"; msg.textContent = "Gespeichert.";
+    setTimeout(() => $("#settings-overlay").classList.remove("open"), 700);
+  } catch {
+    msg.className = "form-msg err"; msg.textContent = "Speichern erst nach dem Deployment möglich (Vorschau).";
+  }
+}
+
+/* ---------- small UI utilities ---------- */
+function esc(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
+let toastT;
+function toast(text) { const el = $("#toast"); el.textContent = text; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("show"), 4200); }
+function showBanner(text, actionLabel, action) {
+  const b = $("#banner"); $("#banner-text").textContent = text;
+  const btn = $("#banner-action");
+  if (actionLabel && action) { btn.textContent = actionLabel; btn.style.display = ""; btn.onclick = action; } else { btn.style.display = "none"; }
+  b.classList.add("show");
+}
+function hideBanner() { $("#banner").classList.remove("show"); }
+
+/* ---------- init ---------- */
+function init() {
+  $("#year").textContent = new Date().getFullYear();
+  renderFilters(); renderForm(); render();
+  $("#refresh-btn").addEventListener("click", triggerRefresh);
+  $("#subscribe-btn").addEventListener("click", submitSubscribe);
+  $("#settings-btn").addEventListener("click", () => $("#settings-overlay").classList.add("open"));
+  $("#settings-close").addEventListener("click", () => $("#settings-overlay").classList.remove("open"));
+  $("#settings-save").addEventListener("click", saveSettings);
+  document.querySelectorAll(".overlay").forEach((o) => o.addEventListener("click", (e) => { if (e.target === o) o.classList.remove("open"); }));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll(".overlay.open").forEach((o) => o.classList.remove("open")); });
+  loadLive();
+}
+document.addEventListener("DOMContentLoaded", init);
+
+</script>
+</body>
+</html>
