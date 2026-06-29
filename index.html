@@ -1,112 +1,160 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IMC Trend Radar · Weiterbildung HSG</title>
-  <meta name="description" content="Trend Radar für die berufsbegleitende Weiterbildung des Instituts für Marketing und Customer Insight, Universität St.Gallen." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/assets/styles.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IMC Research Hub · Universität St.Gallen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/styles.css"/>
 </head>
 <body>
-  <header class="topbar">
-    <div class="wrap topbar__inner">
-      <div class="brand">
-        <span class="brand__mark" aria-hidden="true"></span>
-        <span>IMC Trend Radar<small>Institut für Marketing und Customer Insight · HSG</small></span>
-      </div>
-      <div class="topbar__actions">
-        <button class="btn icon-btn btn--ghost" id="settings-btn" title="Sucheinstellungen" aria-label="Sucheinstellungen">⚙</button>
-        <button class="btn btn--primary" id="refresh-btn">Aktualisieren</button>
-      </div>
-    </div>
-  </header>
+<header class="topbar"><div class="wrap topbar__in">
+  <div class="brand"><span class="brand__mark"></span><span><b>IMC Research Hub</b><small>Institut für Marketing und Customer Insight · HSG</small></span></div>
+  <div class="meta note" id="model-indicator"></div>
+</div></header>
 
-  <section class="hero">
-    <div class="hero__accent" aria-hidden="true"></div>
-    <div class="wrap hero__inner">
-      <p class="eyebrow">From insight to impact</p>
-      <h1>Trends für die Weiterbildung, laufend recherchiert.</h1>
-      <p class="lede">Was sich in Marketing, Vertrieb, Kommunikation und Einkauf bewegt – belegt, eingeordnet und auf die IMC-Programme gemappt.</p>
-      <div class="hero__meta">
-        <span>Stand: <b id="meta-date">—</b></span>
-        <span class="dot-sep">·</span>
-        <span>Recherche: <b id="meta-freq">wöchentlich</b></span>
-        <span class="dot-sep">·</span>
-        <span><b id="meta-count">—</b> Trends in 4 Clustern</span>
+<nav class="tabs"><div class="wrap tabs__in" id="tabs" role="tablist">
+  <button class="tab" role="tab" data-tab="market" aria-selected="true">Market Research</button>
+  <button class="tab" role="tab" data-tab="syllabus" aria-selected="false">Syllabus Comparison</button>
+  <button class="tab" role="tab" data-tab="sales" aria-selected="false">Sales Assistant</button>
+  <button class="tab" role="tab" data-tab="bpm" aria-selected="false">BPM Finder</button>
+  <button class="tab" role="tab" data-tab="mrsg" aria-selected="false">MRSG</button>
+  <button class="tab" role="tab" data-tab="settings" aria-selected="false">Einstellungen</button>
+</div></nav>
+
+<main class="wrap">
+
+  <!-- MARKET RESEARCH -->
+  <section class="panel active" id="panel-market" role="tabpanel">
+    <div class="phead"><h1>Market Research</h1>
+      <p>Mitbewerber-News (max. 21 Tage) und PESTEL-Analyse (Aktualität < 12 Monate) pro Hauptcluster – mit prüfbaren Quellen. Daten bleiben gespeichert, bis eine neue Analyse läuft.</p></div>
+    <div class="banner" id="market-banner"></div>
+    <div class="bar">
+      <button class="btn btn--primary" id="run-market">Analyse jetzt starten</button>
+      <span class="meta" id="market-last">Noch keine Analyse durchgeführt.</span>
+    </div>
+    <div class="grid" id="market-grid"></div>
+    <div id="cross-cluster"></div>
+
+    <div class="card" style="margin-top:26px">
+      <h3>Suchabo anlegen</h3>
+      <p class="note" style="margin:0 0 12px">Erhalten Sie eine E-Mail, sobald eine neue Analyse neue Mitbewerber-News findet. Verwaltung &amp; Löschen unter „Einstellungen“.</p>
+      <div class="row2">
+        <div class="field"><label for="sub-email">E-Mail</label><input type="email" id="sub-email" placeholder="vorname.nachname@unisg.ch"/></div>
+        <div class="field"><label>Cluster (leer = alle)</label><div id="sub-clusters" class="note"></div></div>
+      </div>
+      <button class="btn btn--primary" id="sub-add">Suchabo aktivieren</button>
+      <p class="form-msg" id="sub-msg"></p>
+    </div>
+  </section>
+
+  <!-- SYLLABUS -->
+  <section class="panel" id="panel-syllabus" role="tabpanel">
+    <div class="phead"><h1>Syllabus Comparison</h1>
+      <p>Laden Sie Ihren Syllabus und die Syllabi vergleichbarer Mitbewerber-Programme hoch. Sie erhalten eine spezifische, begründete Analyse zu Stärken, Schwächen und Gaps.</p></div>
+    <div class="two-col">
+      <div>
+        <div class="field"><label>Weiterbildung (optional)</label><select id="syl-course"></select></div>
+        <div class="field"><label>Unser Syllabus (PDF)</label>
+          <div class="drop" id="syl-ours-drop">PDF hierher ziehen oder klicken</div>
+          <input type="file" id="syl-ours-file" accept="application/pdf" hidden/>
+          <div class="filelist" id="syl-ours-name"></div>
+        </div>
+        <div class="field"><label>Mitbewerber-Syllabi (PDF, mehrere möglich)</label>
+          <div class="drop" id="syl-comp-drop">PDFs hierher ziehen oder klicken</div>
+          <input type="file" id="syl-comp-file" accept="application/pdf" multiple hidden/>
+          <div class="filelist" id="syl-comp-name"></div>
+        </div>
+        <button class="btn btn--primary" id="run-syllabus">Analyse starten</button>
+        <p class="form-msg" id="syl-msg"></p>
+      </div>
+      <div id="syl-result" class="result"></div>
+    </div>
+  </section>
+
+  <!-- SALES -->
+  <section class="panel" id="panel-sales" role="tabpanel">
+    <div class="phead"><h1>Sales Assistant</h1>
+      <p>Fügen Sie LinkedIn-Infos der Interessent:in ein und wählen Sie den Kurs. Sie erhalten Gesprächs-Empfehlungen – und können ein fiktives Verkaufsgespräch üben.</p></div>
+    <div class="two-col">
+      <div>
+        <div class="field"><label>Kurs</label><select id="sales-course"></select></div>
+        <div class="field"><label>LinkedIn-Infos (Copy &amp; Paste)</label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, Position …"></textarea></div>
+        <div class="field"><label>Syllabus-Text (optional, erhöht die Genauigkeit)</label><textarea id="sales-syllabus" placeholder="Optional: Syllabus/Modulinhalte einfügen"></textarea></div>
+        <button class="btn btn--primary" id="run-sales">Gesprächsvorbereitung erstellen</button>
+        <p class="form-msg" id="sales-msg"></p>
+      </div>
+      <div>
+        <h3 style="font-size:16px;margin:0 0 10px">Übungsgespräch <span class="note">(fiktive Interessent:in)</span></h3>
+        <div class="chat">
+          <div class="chat__log" id="sales-log"></div>
+          <div class="chat__in"><textarea id="sales-chat-input" placeholder="Ihre Antwort …"></textarea><button class="btn btn--primary" id="sales-send">Senden</button></div>
+        </div>
+        <button class="btn btn--sm" id="sales-start" style="margin-top:10px">Übungsgespräch starten</button>
       </div>
     </div>
   </section>
 
-  <nav class="filters" aria-label="Nach Use Case filtern">
-    <div class="wrap filters__inner" id="filters">
-      <span class="filters__label">Use Case:</span>
-    </div>
-  </nav>
-
-  <div class="wrap">
-    <div class="banner" id="banner">
-      <span id="banner-text"></span>
-      <button id="banner-action" type="button"></button>
-    </div>
-  </div>
-
-  <main class="wrap" id="rows" aria-live="polite"></main>
-
-  <section class="subscribe" id="anmelden">
-    <div class="wrap subscribe__grid">
+  <!-- BPM -->
+  <section class="panel" id="panel-bpm" role="tabpanel">
+    <div class="phead"><h1>BPM Finder</h1>
+      <p>Laden Sie das PDF zur „Best Practice in Marketing“-Veranstaltung hoch. Der Assistent sucht passende Referent:innen aus dem DACH-Raum – mit Quellen und Begründung.</p></div>
+    <div class="two-col">
       <div>
-        <h2>Auf dem Laufenden bleiben</h2>
-        <p>Wählen Sie die Use Cases, die für Sie zählen. Sobald die nächste Recherche neue Trends findet, erhalten Sie eine kurze E-Mail.</p>
+        <div class="field"><label>Veranstaltungs-PDF</label>
+          <div class="drop" id="bpm-drop">PDF hierher ziehen oder klicken</div>
+          <input type="file" id="bpm-file" accept="application/pdf" hidden/>
+          <div class="filelist" id="bpm-name"></div>
+        </div>
+        <button class="btn btn--primary" id="run-bpm">Referent:innen suchen</button>
+        <p class="form-msg" id="bpm-msg"></p>
       </div>
-      <div>
-        <div class="field">
-          <label class="lbl" for="email">E-Mail-Adresse</label>
-          <input type="email" id="email" placeholder="vorname.nachname@unisg.ch" autocomplete="email" />
+      <div id="bpm-result" class="result"></div>
+    </div>
+  </section>
+
+  <!-- MRSG -->
+  <section class="panel" id="panel-mrsg" role="tabpanel">
+    <div class="phead"><h1>Marketing Review St.Gallen</h1>
+      <p>Das Gutachter-Matching der Marketing Review St.Gallen.</p></div>
+    <div class="card" style="max-width:560px">
+      <h3>MRSG · Gutachter-Matching</h3>
+      <p class="note" style="margin:0 0 14px">Externes Tool zum Matching von Gutachter:innen für die Marketing Review St.Gallen.</p>
+      <a class="btn btn--primary" href="https://curious-axolotl-45a3b7.netlify.app/" target="_blank" rel="noopener">Zum Gutachter-Matching ↗</a>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="panel" id="panel-settings" role="tabpanel">
+    <div class="phead"><h1>Einstellungen</h1><p>Modellversion für alle Features wählen und Kosten-Richtwerte verwalten. Suchabos einsehen und löschen.</p></div>
+    <div class="two-col">
+      <div class="card">
+        <h3>Modell &amp; Kosten</h3>
+        <div class="field" style="margin-top:10px"><label>Chatbot-Version (für alle Features)</label><select id="set-model"></select></div>
+        <div class="section-title">Preis-Richtwerte (USD / 1 Mio Token)</div>
+        <div id="price-table"></div>
+        <div class="field" style="margin-top:8px"><label>Websuche (USD / 1000 Anfragen)</label><input type="text" id="set-websearch" style="max-width:160px"/></div>
+        <button class="btn btn--primary" id="set-save">Speichern</button>
+        <p class="form-msg" id="set-msg"></p>
+        <div class="cost-card">
+          <div class="note">Geschätzte Kosten pro voller Market-Research-Analyse (5 Suchläufe, ~je 1 Aufruf):</div>
+          <div class="big" id="cost-estimate">–</div>
+          <div class="note" id="cost-detail"></div>
         </div>
-        <div class="field">
-          <label class="lbl">Worüber möchten Sie informiert werden?</label>
-          <div class="checks" id="usecase-checks"></div>
-        </div>
-        <div class="field">
-          <label class="lbl">Optional: nur bestimmte Cluster</label>
-          <div class="checks" id="cluster-checks"></div>
-        </div>
-        <button class="btn btn--primary" id="subscribe-btn">Anmelden</button>
-        <p class="form-msg" id="form-msg" role="status"></p>
+      </div>
+      <div class="card">
+        <h3>Suchabos</h3>
+        <p class="note" style="margin:0 0 6px">E-Mail-Adressen maskiert dargestellt.</p>
+        <div id="sub-list"></div>
       </div>
     </div>
   </section>
 
-  <footer>
-    <div class="wrap">
-      <span>© <span id="year"></span> Institut für Marketing und Customer Insight, Universität St.Gallen</span>
-      <span>Quellen werden automatisiert recherchiert – bitte vor Verwendung prüfen.</span>
-    </div>
-  </footer>
+</main>
 
-  <!-- Trend detail modal -->
-  <div class="overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal" id="modal"></div>
-  </div>
-
-  <!-- Settings modal -->
-  <div class="overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-    <div class="modal" style="max-width: 480px">
-      <button class="btn icon-btn btn--ghost modal__close" id="settings-close" aria-label="Schliessen">✕</button>
-      <h2 id="settings-title" style="font-size: 22px">Sucheinstellungen</h2>
-      <p class="modal__summary" style="font-size: 14.5px">Wie oft soll das Web nach neuen Trends durchsucht werden?</p>
-      <div class="radio-row" id="freq-radios"></div>
-      <button class="btn btn--primary" id="settings-save" style="margin-top: 16px">Speichern</button>
-      <p class="note">Globale Einstellung. Der geplante Lauf prüft täglich, ob gemäss dieser Frequenz eine neue Recherche fällig ist.</p>
-      <p class="form-msg" id="settings-msg" role="status"></p>
-    </div>
-  </div>
-
-  <div class="toast" id="toast" role="status"></div>
-
-  <script src="/assets/app.js"></script>
+<div class="toast" id="toast"></div>
+<script src="/assets/app.js"></script>
 </body>
 </html>

@@ -1,15 +1,6 @@
-# Netlify configuration for the IMC Trend Radar.
-
 [build]
   publish = "."
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
-
-# Clean URLs (/api/*) are defined via `export const config = { path: ... }`
-# inside each function, so no manual redirects are required.
-#
-# The scheduled refresh runs daily (@daily). It only triggers an actual
-# web-research run when one is due per the configured frequency
-# (daily / weekly / monthly), set in the app under "Sucheinstellungen".
