@@ -10,6 +10,7 @@ export default async (req) => {
     if (b.model && MODELS.includes(b.model)) patch.model = b.model;
     if (b.prices && typeof b.prices === "object") patch.prices = b.prices;
     if (typeof b.webSearchPer1000 === "number") patch.webSearchPer1000 = b.webSearchPer1000;
+    if (["off", "weekly", "monthly"].includes(b.autoMarket)) patch.autoMarket = b.autoMarket;
     return Response.json(await saveSettings(patch), { status: 200 });
   }
   return Response.json({ error: "method" }, { status: 405 });

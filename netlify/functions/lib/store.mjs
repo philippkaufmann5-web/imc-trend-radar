@@ -16,6 +16,7 @@ export async function getJob(id) { return getJSON(`jobs:${id}`); }
 // ---- Settings (model + cost table) ----
 const DEFAULT_SETTINGS = {
   model: "claude-sonnet-4-6",
+  autoMarket: "off", // "off" | "weekly" | "monthly"
   // Richtwerte in USD pro 1 Mio Token (anpassbar in den Einstellungen).
   prices: {
     "claude-opus-4-8": { in: 15, out: 75 },

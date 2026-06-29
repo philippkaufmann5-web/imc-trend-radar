@@ -35,6 +35,7 @@
     <div class="bar">
       <button class="btn btn--primary" id="run-market">Analyse jetzt starten</button>
       <span class="meta" id="market-last">Noch keine Analyse durchgeführt.</span>
+      <span class="badge badge--none" id="market-auto">Auto: aus</span>
     </div>
     <div id="cross-cluster"></div>
     <div class="grid" id="market-grid"></div>
@@ -153,6 +154,11 @@
       <div class="card">
         <h3>Modell &amp; Kosten</h3>
         <div class="field" style="margin-top:10px"><label>Chatbot-Version (für alle Features)</label><select id="set-model"></select></div>
+        <div class="field"><label>Automatische Market-Research-Analyse</label><select id="set-auto">
+          <option value="off">Aus</option>
+          <option value="weekly">Alle 7 Tage</option>
+          <option value="monthly">Alle 30 Tage</option>
+        </select></div>
         <button class="btn btn--primary" id="set-save">Speichern</button>
         <p class="form-msg" id="set-msg"></p>
         <div class="section-title">Geschätzte Kosten pro Lauf – je Use Case</div>

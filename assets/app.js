@@ -240,29 +240,38 @@ function renderBpm(list){
 let settings=null;
 const PRICES={ "claude-opus-4-8":{in:15,out:75}, "claude-sonnet-4-6":{in:3,out:15}, "claude-haiku-4-5-20251001":{in:1,out:5} };
 const WS_PER_1000=10;
+// Hinweis: Bei Web-Recherche fliessen die gefundenen Seiteninhalte als Input-Tokens
+// in den Kontext – darum sind die Input-Tokens dort sehr hoch (kalibriert an realen Läufen).
 const USECASES=[
-  ["Market Research",{calls:5,in:4000,out:1500,searches:30}],
-  ["Syllabus Comparison",{calls:1,in:9000,out:1500,searches:0}],
+  ["Market Research",{calls:5,in:110000,out:1500,searches:25}],
+  ["Syllabus Comparison",{calls:1,in:20000,out:1500,searches:0}],
   ["Sales Assistant (pro Vorbereitung)",{calls:1,in:3000,out:1200,searches:0}],
-  ["BPM Finder",{calls:1,in:6000,out:2000,searches:8}],
+  ["BPM Finder",{calls:1,in:50000,out:2000,searches:8}],
 ];
 function costFor(model,u){ const p=PRICES[model]||{in:0,out:0}; const tok=u.calls*(u.in/1e6*p.in + u.out/1e6*p.out); const s=u.searches/1000*WS_PER_1000; return tok+s; }
 function renderCostTable(){
   const model=$("#set-model").value;
-  $("#cost-table").innerHTML=USECASES.map(([name,u])=>`<div class="kv"><span>${name}</span><b>≈ $${costFor(model,u).toFixed(3)}</b></div>`).join("");
+  $("#cost-table").innerHTML=USECASES.map(([name,u])=>`<div class="kv"><span>${name}</span><b>≈ $${costFor(model,u).toFixed(2)}</b></div>`).join("");
 }
 async function loadSettings(){
   settings=await jget("/api/settings");
-  if(!settings||!settings.model){ settings={model:"claude-sonnet-4-6"}; }
+  if(!settings||!settings.model){ settings={model:"claude-sonnet-4-6",autoMarket:"off"}; }
   $("#set-model").innerHTML=MODELS.map(([v,l])=>`<option value="${v}" ${settings.model===v?"selected":""}>${l}</option>`).join("");
-  renderCostTable();
+  $("#set-auto").value=settings.autoMarket||"off";
+  renderCostTable(); updateAutoIndicator();
   $("#set-model").addEventListener("change",renderCostTable);
   loadSubs();
 }
+function updateAutoIndicator(){
+  const v=(settings&&settings.autoMarket)||"off";
+  const el=$("#market-auto"); if(!el) return;
+  el.textContent={off:"Auto: aus",weekly:"Auto: alle 7 Tage",monthly:"Auto: alle 30 Tage"}[v];
+  el.className="badge "+(v==="off"?"badge--none":"badge--news");
+}
 async function saveSettings(){
   const msg=$("#set-msg"); msg.className="form-msg";
-  const r=await jpost("/api/settings",{model:$("#set-model").value});
-  if(r.model){ settings=r; msg.className="form-msg ok"; msg.textContent="Gespeichert."; }
+  const r=await jpost("/api/settings",{model:$("#set-model").value,autoMarket:$("#set-auto").value});
+  if(r.model){ settings=r; msg.className="form-msg ok"; msg.textContent="Gespeichert."; updateAutoIndicator(); }
   else { msg.className="form-msg err"; msg.textContent=r.error||"Fehler (erst nach Deployment)."; }
 }
 async function loadSubs(){
