@@ -12,7 +12,6 @@
 <body>
 <header class="topbar"><div class="wrap topbar__in">
   <div class="brand"><span class="brand__mark"></span><span><b>IMC Research Hub</b><small>Institut für Marketing und Customer Insight · HSG</small></span></div>
-  <div class="meta note" id="model-indicator"></div>
 </div></header>
 
 <nav class="tabs"><div class="wrap tabs__in" id="tabs" role="tablist">
@@ -77,22 +76,41 @@
   <!-- SALES -->
   <section class="panel" id="panel-sales" role="tabpanel">
     <div class="phead"><h1>Sales Assistant</h1>
-      <p>Fügen Sie LinkedIn-Infos der Interessent:in ein und wählen Sie den Kurs. Sie erhalten Gesprächs-Empfehlungen – und können ein fiktives Verkaufsgespräch üben.</p></div>
-    <div class="two-col">
-      <div>
-        <div class="field"><label>Kurs</label><select id="sales-course"></select></div>
-        <div class="field"><label>LinkedIn-Infos (Copy &amp; Paste)</label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, Position …"></textarea></div>
-        <div class="field"><label>Syllabus-Text (optional, erhöht die Genauigkeit)</label><textarea id="sales-syllabus" placeholder="Optional: Syllabus/Modulinhalte einfügen"></textarea></div>
-        <button class="btn btn--primary" id="run-sales">Gesprächsvorbereitung erstellen</button>
-        <p class="form-msg" id="sales-msg"></p>
+      <p>Erst Kurs und LinkedIn-Infos erfassen – danach entweder eine präzise Gesprächsvorbereitung erstellen oder ein Übungsgespräch führen (Chat, optional per Sprache). Beide beziehen sich auf den gewählten Kurs.</p></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>1 · Kontext <span class="note">– gilt für Vorbereitung und Übungsgespräch</span></h3>
+      <div class="row2" style="margin-top:12px">
+        <div class="field"><label>Kurs *</label><select id="sales-course"></select></div>
+        <div class="field"><label>LinkedIn-Infos * (Copy &amp; Paste)</label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, Position …"></textarea></div>
       </div>
-      <div>
-        <h3 style="font-size:16px;margin:0 0 10px">Übungsgespräch <span class="note">(fiktive Interessent:in)</span></h3>
+      <div class="field"><label>Syllabus-Text (optional, erhöht die Genauigkeit)</label><textarea id="sales-syllabus" placeholder="Optional: Syllabus/Modulinhalte einfügen"></textarea></div>
+      <p class="note" id="sales-gate-note">Bitte zuerst Kurs wählen und LinkedIn-Infos einfügen.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>2a · Gesprächsvorbereitung</h3>
+        <p class="note" style="margin:4px 0 12px">Präzise auf die Person und den Kurs „<span id="sales-course-label-a">–</span>“ zugeschnittene Punkte fürs Informationsgespräch.</p>
+        <button class="btn btn--primary" id="run-sales" disabled>Vorbereitung erstellen</button>
+        <p class="form-msg" id="sales-msg"></p>
+        <div id="sales-prep" class="result"></div>
+      </div>
+      <div class="card">
+        <h3>2b · Übungsgespräch <span class="note">(fiktive Interessent:in)</span></h3>
+        <p class="note" style="margin:4px 0 10px">Simuliert ein Informationsgespräch zum Kurs „<span id="sales-course-label-b">–</span>“. Optional per Mikrofon sprechen und vorlesen lassen.</p>
         <div class="chat">
           <div class="chat__log" id="sales-log"></div>
-          <div class="chat__in"><textarea id="sales-chat-input" placeholder="Ihre Antwort …"></textarea><button class="btn btn--primary" id="sales-send">Senden</button></div>
+          <div class="chat__in">
+            <button class="btn btn--sm" id="sales-mic" title="Sprechen" hidden>🎤</button>
+            <textarea id="sales-chat-input" placeholder="Ihre Antwort …" disabled></textarea>
+            <button class="btn btn--primary" id="sales-send" disabled>Senden</button>
+          </div>
         </div>
-        <button class="btn btn--sm" id="sales-start" style="margin-top:10px">Übungsgespräch starten</button>
+        <div class="bar" style="margin-top:10px">
+          <button class="btn btn--sm" id="sales-start" disabled>Übungsgespräch starten</button>
+          <label class="note" style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="sales-tts"> Antworten vorlesen</label>
+        </div>
       </div>
     </div>
   </section>
@@ -133,16 +151,11 @@
       <div class="card">
         <h3>Modell &amp; Kosten</h3>
         <div class="field" style="margin-top:10px"><label>Chatbot-Version (für alle Features)</label><select id="set-model"></select></div>
-        <div class="section-title">Preis-Richtwerte (USD / 1 Mio Token)</div>
-        <div id="price-table"></div>
-        <div class="field" style="margin-top:8px"><label>Websuche (USD / 1000 Anfragen)</label><input type="text" id="set-websearch" style="max-width:160px"/></div>
         <button class="btn btn--primary" id="set-save">Speichern</button>
         <p class="form-msg" id="set-msg"></p>
-        <div class="cost-card">
-          <div class="note">Geschätzte Kosten pro voller Market-Research-Analyse (5 Suchläufe, ~je 1 Aufruf):</div>
-          <div class="big" id="cost-estimate">–</div>
-          <div class="note" id="cost-detail"></div>
-        </div>
+        <div class="section-title">Geschätzte Kosten pro Lauf – je Use Case</div>
+        <div id="cost-table"></div>
+        <p class="note" style="margin-top:8px">Richtwerte in USD, abhängig vom gewählten Modell. Keine Garantie – aktuelle Preise bei Anthropic prüfen.</p>
       </div>
       <div class="card">
         <h3>Suchabos</h3>

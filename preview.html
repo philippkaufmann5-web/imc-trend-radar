@@ -157,7 +157,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
 <body>
 <header class="topbar"><div class="wrap topbar__in">
   <div class="brand"><span class="brand__mark"></span><span><b>IMC Research Hub</b><small>Institut für Marketing und Customer Insight · HSG</small></span></div>
-  <div class="meta note" id="model-indicator"></div>
 </div></header>
 
 <nav class="tabs"><div class="wrap tabs__in" id="tabs" role="tablist">
@@ -222,22 +221,41 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
   <!-- SALES -->
   <section class="panel" id="panel-sales" role="tabpanel">
     <div class="phead"><h1>Sales Assistant</h1>
-      <p>Fügen Sie LinkedIn-Infos der Interessent:in ein und wählen Sie den Kurs. Sie erhalten Gesprächs-Empfehlungen – und können ein fiktives Verkaufsgespräch üben.</p></div>
-    <div class="two-col">
-      <div>
-        <div class="field"><label>Kurs</label><select id="sales-course"></select></div>
-        <div class="field"><label>LinkedIn-Infos (Copy &amp; Paste)</label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, Position …"></textarea></div>
-        <div class="field"><label>Syllabus-Text (optional, erhöht die Genauigkeit)</label><textarea id="sales-syllabus" placeholder="Optional: Syllabus/Modulinhalte einfügen"></textarea></div>
-        <button class="btn btn--primary" id="run-sales">Gesprächsvorbereitung erstellen</button>
-        <p class="form-msg" id="sales-msg"></p>
+      <p>Erst Kurs und LinkedIn-Infos erfassen – danach entweder eine präzise Gesprächsvorbereitung erstellen oder ein Übungsgespräch führen (Chat, optional per Sprache). Beide beziehen sich auf den gewählten Kurs.</p></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>1 · Kontext <span class="note">– gilt für Vorbereitung und Übungsgespräch</span></h3>
+      <div class="row2" style="margin-top:12px">
+        <div class="field"><label>Kurs *</label><select id="sales-course"></select></div>
+        <div class="field"><label>LinkedIn-Infos * (Copy &amp; Paste)</label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, Position …"></textarea></div>
       </div>
-      <div>
-        <h3 style="font-size:16px;margin:0 0 10px">Übungsgespräch <span class="note">(fiktive Interessent:in)</span></h3>
+      <div class="field"><label>Syllabus-Text (optional, erhöht die Genauigkeit)</label><textarea id="sales-syllabus" placeholder="Optional: Syllabus/Modulinhalte einfügen"></textarea></div>
+      <p class="note" id="sales-gate-note">Bitte zuerst Kurs wählen und LinkedIn-Infos einfügen.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>2a · Gesprächsvorbereitung</h3>
+        <p class="note" style="margin:4px 0 12px">Präzise auf die Person und den Kurs „<span id="sales-course-label-a">–</span>“ zugeschnittene Punkte fürs Informationsgespräch.</p>
+        <button class="btn btn--primary" id="run-sales" disabled>Vorbereitung erstellen</button>
+        <p class="form-msg" id="sales-msg"></p>
+        <div id="sales-prep" class="result"></div>
+      </div>
+      <div class="card">
+        <h3>2b · Übungsgespräch <span class="note">(fiktive Interessent:in)</span></h3>
+        <p class="note" style="margin:4px 0 10px">Simuliert ein Informationsgespräch zum Kurs „<span id="sales-course-label-b">–</span>“. Optional per Mikrofon sprechen und vorlesen lassen.</p>
         <div class="chat">
           <div class="chat__log" id="sales-log"></div>
-          <div class="chat__in"><textarea id="sales-chat-input" placeholder="Ihre Antwort …"></textarea><button class="btn btn--primary" id="sales-send">Senden</button></div>
+          <div class="chat__in">
+            <button class="btn btn--sm" id="sales-mic" title="Sprechen" hidden>🎤</button>
+            <textarea id="sales-chat-input" placeholder="Ihre Antwort …" disabled></textarea>
+            <button class="btn btn--primary" id="sales-send" disabled>Senden</button>
+          </div>
         </div>
-        <button class="btn btn--sm" id="sales-start" style="margin-top:10px">Übungsgespräch starten</button>
+        <div class="bar" style="margin-top:10px">
+          <button class="btn btn--sm" id="sales-start" disabled>Übungsgespräch starten</button>
+          <label class="note" style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="sales-tts"> Antworten vorlesen</label>
+        </div>
       </div>
     </div>
   </section>
@@ -278,16 +296,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
       <div class="card">
         <h3>Modell &amp; Kosten</h3>
         <div class="field" style="margin-top:10px"><label>Chatbot-Version (für alle Features)</label><select id="set-model"></select></div>
-        <div class="section-title">Preis-Richtwerte (USD / 1 Mio Token)</div>
-        <div id="price-table"></div>
-        <div class="field" style="margin-top:8px"><label>Websuche (USD / 1000 Anfragen)</label><input type="text" id="set-websearch" style="max-width:160px"/></div>
         <button class="btn btn--primary" id="set-save">Speichern</button>
         <p class="form-msg" id="set-msg"></p>
-        <div class="cost-card">
-          <div class="note">Geschätzte Kosten pro voller Market-Research-Analyse (5 Suchläufe, ~je 1 Aufruf):</div>
-          <div class="big" id="cost-estimate">–</div>
-          <div class="note" id="cost-detail"></div>
-        </div>
+        <div class="section-title">Geschätzte Kosten pro Lauf – je Use Case</div>
+        <div id="cost-table"></div>
+        <p class="note" style="margin-top:8px">Richtwerte in USD, abhängig vom gewählten Modell. Keine Garantie – aktuelle Preise bei Anthropic prüfen.</p>
       </div>
       <div class="card">
         <h3>Suchabos</h3>
@@ -433,38 +446,65 @@ function renderSyllabus(r){
 }
 
 /* ================= SALES ================= */
-let salesChat=[];
+let salesChat=[], recog=null, recognizing=false;
 function initSales(){
-  fillCourseSelect($("#sales-course"),false);
+  fillCourseSelect($("#sales-course"),true);
   $("#run-sales").addEventListener("click",salesPrep);
   $("#sales-start").addEventListener("click",salesStart);
   $("#sales-send").addEventListener("click",salesSend);
+  $("#sales-course").addEventListener("change",salesGate);
+  $("#sales-linkedin").addEventListener("input",salesGate);
+  $("#sales-chat-input").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); if(!$("#sales-send").disabled) salesSend(); }});
+  initAudio(); salesGate();
+}
+function salesGate(){
+  const course=$("#sales-course").value, li=$("#sales-linkedin").value.trim();
+  const ready=!!course && !!li;
+  ["#run-sales","#sales-start","#sales-chat-input","#sales-send"].forEach(s=>$(s).disabled=!ready);
+  $("#sales-mic").disabled=!ready;
+  $("#sales-course-label-a").textContent=course||"–";
+  $("#sales-course-label-b").textContent=course||"–";
+  $("#sales-gate-note").textContent= ready ? "✓ Bereit – wählen Sie rechts Vorbereitung oder Übungsgespräch." : "Bitte zuerst Kurs wählen und LinkedIn-Infos einfügen.";
 }
 function salesCtx(){ return { course:$("#sales-course").value, linkedin:$("#sales-linkedin").value.trim(), syllabusText:$("#sales-syllabus").value.trim() }; }
+
 async function salesPrep(){
   const msg=$("#sales-msg"); msg.className="form-msg";
-  if(!$("#sales-linkedin").value.trim()){ msg.className="form-msg err"; msg.textContent="Bitte LinkedIn-Infos einfügen."; return; }
   const btn=$("#run-sales"); btn.disabled=true; btn.innerHTML=spin+"Erstelle …";
   const r=await jpost("/api/sales",{mode:"prep",...salesCtx()});
-  btn.disabled=false; btn.textContent="Gesprächsvorbereitung erstellen";
-  let box=$("#sales-prep"); if(!box){ box=document.createElement("div"); box.id="sales-prep"; box.className="result"; msg.after(box); }
-  box.innerHTML = r.reply ? `<h3>Gesprächsvorbereitung</h3><div style="white-space:pre-wrap;font-size:14px">${esc(r.reply)}</div>` : `<p class="form-msg err">${esc(r.error||"Fehler (erst nach Deployment).")}</p>`;
+  btn.disabled=false; btn.textContent="Vorbereitung erstellen"; salesGate();
+  $("#sales-prep").innerHTML = r.reply
+    ? `<h3>Gesprächsvorbereitung · ${esc($("#sales-course").value)}</h3><div style="white-space:pre-wrap;font-size:14px">${esc(r.reply)}</div>`
+    : `<p class="form-msg err">${esc(r.error||"Fehler (erst nach Deployment).")}</p>`;
 }
 function pushMsg(role,text){ const log=$("#sales-log"); const d=document.createElement("div"); d.className="msg "+(role==="user"?"user":"bot"); d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; }
 async function salesStart(){
   salesChat=[]; $("#sales-log").innerHTML="";
-  if(!$("#sales-linkedin").value.trim()&&!$("#sales-course").value){ toast("Tipp: Kurs/LinkedIn ausfüllen für ein realistischeres Gespräch."); }
+  const btn=$("#sales-start"); btn.disabled=true; btn.innerHTML=spin+"…";
   const r=await jpost("/api/sales",{mode:"roleplay",...salesCtx(),messages:[]});
-  if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); }
+  btn.disabled=false; btn.textContent="Übungsgespräch neu starten";
+  if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); speak(r.reply); }
   else toast(r.error||"Fehler (erst nach Deployment).");
 }
 async function salesSend(){
   const inp=$("#sales-chat-input"); const t=inp.value.trim(); if(!t) return;
   inp.value=""; pushMsg("user",t); salesChat.push({role:"user",content:t});
   const r=await jpost("/api/sales",{mode:"roleplay",...salesCtx(),messages:salesChat});
-  if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); }
+  if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); speak(r.reply); }
   else toast(r.error||"Fehler.");
 }
+/* audio: speech-to-text input + text-to-speech output (Web Speech API) */
+function initAudio(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ return; } // Mikrofon-Button bleibt versteckt, Vorlesen funktioniert trotzdem
+  $("#sales-mic").hidden=false;
+  recog=new SR(); recog.lang="de-DE"; recog.interimResults=false; recog.maxAlternatives=1;
+  recog.onresult=e=>{ $("#sales-chat-input").value=e.results[0][0].transcript; salesSend(); };
+  recog.onend=()=>{ recognizing=false; $("#sales-mic").textContent="🎤"; };
+  recog.onerror=()=>{ recognizing=false; $("#sales-mic").textContent="🎤"; };
+  $("#sales-mic").addEventListener("click",()=>{ if(recognizing){ recog.stop(); return; } try{ recog.start(); recognizing=true; $("#sales-mic").textContent="⏺"; }catch{} });
+}
+function speak(text){ if(!$("#sales-tts").checked || !window.speechSynthesis) return; const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
 
 /* ================= BPM ================= */
 let bpmFile=null;
@@ -491,43 +531,33 @@ function renderBpm(list){
 
 /* ================= SETTINGS ================= */
 let settings=null;
+const PRICES={ "claude-opus-4-8":{in:15,out:75}, "claude-sonnet-4-6":{in:3,out:15}, "claude-haiku-4-5-20251001":{in:1,out:5} };
+const WS_PER_1000=10;
+const USECASES=[
+  ["Market Research",{calls:5,in:4000,out:1500,searches:30}],
+  ["Syllabus Comparison",{calls:1,in:9000,out:1500,searches:0}],
+  ["Sales Assistant (pro Vorbereitung)",{calls:1,in:3000,out:1200,searches:0}],
+  ["BPM Finder",{calls:1,in:6000,out:2000,searches:8}],
+];
+function costFor(model,u){ const p=PRICES[model]||{in:0,out:0}; const tok=u.calls*(u.in/1e6*p.in + u.out/1e6*p.out); const s=u.searches/1000*WS_PER_1000; return tok+s; }
+function renderCostTable(){
+  const model=$("#set-model").value;
+  $("#cost-table").innerHTML=USECASES.map(([name,u])=>`<div class="kv"><span>${name}</span><b>≈ $${costFor(model,u).toFixed(3)}</b></div>`).join("");
+}
 async function loadSettings(){
   settings=await jget("/api/settings");
-  if(!settings||!settings.model){ settings={model:"claude-sonnet-4-6",webSearchPer1000:10,prices:{"claude-opus-4-8":{in:15,out:75},"claude-sonnet-4-6":{in:3,out:15},"claude-haiku-4-5-20251001":{in:1,out:5}}}; }
+  if(!settings||!settings.model){ settings={model:"claude-sonnet-4-6"}; }
   $("#set-model").innerHTML=MODELS.map(([v,l])=>`<option value="${v}" ${settings.model===v?"selected":""}>${l}</option>`).join("");
-  $("#set-websearch").value=settings.webSearchPer1000;
-  renderPrices(); updateModelIndicator(); estimateCost();
-  $("#set-model").addEventListener("change",estimateCost);
+  renderCostTable();
+  $("#set-model").addEventListener("change",renderCostTable);
   loadSubs();
-}
-function renderPrices(){
-  const p=settings.prices||{}; 
-  $("#price-table").innerHTML=`<div class="price-row note"><span>Modell</span><span>Input</span><span>Output</span></div>`+
-    MODELS.map(([v])=>`<div class="price-row"><span style="font-size:13px">${v.replace("claude-","")}</span>
-      <input type="text" data-m="${v}" data-k="in" value="${(p[v]||{}).in??""}"/>
-      <input type="text" data-m="${v}" data-k="out" value="${(p[v]||{}).out??""}"/></div>`).join("");
-  $$("#price-table input").forEach(i=>i.addEventListener("input",estimateCost));
-}
-function readPrices(){
-  const prices={}; $$("#price-table input").forEach(i=>{ const m=i.dataset.m; prices[m]=prices[m]||{}; prices[m][i.dataset.k]=parseFloat(i.value)||0; }); return prices;
-}
-function estimateCost(){
-  const model=$("#set-model").value; const prices=readPrices(); const ws=parseFloat($("#set-websearch").value)||0;
-  const pr=prices[model]||{in:0,out:0};
-  const calls=5, inTok=4000, outTok=1500, searches=30;
-  const tokenCost=calls*(inTok/1e6*pr.in + outTok/1e6*pr.out);
-  const searchCost=searches/1000*ws;
-  const total=tokenCost+searchCost;
-  $("#cost-estimate").textContent="≈ $"+total.toFixed(3);
-  $("#cost-detail").textContent=`Modell ${model.replace("claude-","")} · Token ~$${tokenCost.toFixed(3)} + Websuche ~$${searchCost.toFixed(3)}. Richtwerte, keine Garantie.`;
 }
 async function saveSettings(){
   const msg=$("#set-msg"); msg.className="form-msg";
-  const r=await jpost("/api/settings",{model:$("#set-model").value,prices:readPrices(),webSearchPer1000:parseFloat($("#set-websearch").value)||0});
-  if(r.model){ settings=r; msg.className="form-msg ok"; msg.textContent="Gespeichert."; updateModelIndicator(); }
+  const r=await jpost("/api/settings",{model:$("#set-model").value});
+  if(r.model){ settings=r; msg.className="form-msg ok"; msg.textContent="Gespeichert."; }
   else { msg.className="form-msg err"; msg.textContent=r.error||"Fehler (erst nach Deployment)."; }
 }
-function updateModelIndicator(){ $("#model-indicator").textContent="Modell: "+(settings?.model||"–").replace("claude-",""); }
 async function loadSubs(){
   const list=await jget("/api/subscriptions").catch(()=>[]);
   const box=$("#sub-list");
@@ -563,7 +593,6 @@ function init(){
   $("#run-market").addEventListener("click",runMarket);
   $("#sub-add").addEventListener("click",subAdd);
   $("#set-save").addEventListener("click",saveSettings);
-  $("#set-websearch").addEventListener("input",estimateCost);
   loadMarket(); loadSettings();
 }
 document.addEventListener("DOMContentLoaded",init);
