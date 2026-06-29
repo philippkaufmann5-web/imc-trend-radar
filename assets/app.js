@@ -84,7 +84,7 @@ function renderMarket(data){
   const reco=$("#market-reco"); if(reco) reco.innerHTML="";
   if(!data || data.status==="empty" || !data.clusters){ grid.innerHTML='<p class="empty">Noch keine Daten – starten Sie eine Analyse.</p>'; return; }
   if(data.status==="running"){ $("#market-last").textContent="Analyse läuft …"; return; }
-  $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleString("de-CH") : "";
+  $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleDateString("de-CH") : "";
 
   if(reco && Array.isArray(data.recommendations) && data.recommendations.length){
     reco.innerHTML=`<div class="reco-box"><h3>Zusammenfassung / Handlungsempfehlungen</h3><ul>${data.recommendations.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`;
