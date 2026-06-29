@@ -18,7 +18,7 @@ export default async (req) => {
 `Du suchst Referent:innen für die "Best Practice in Marketing"-Veranstaltung des IMC der Universität St.Gallen. Lies das angehängte PDF (Themen/Programm). Suche dann im Web nach passenden Personen AUS DEM DACH-RAUM (DE/AT/CH), die bereits zu ähnlichen Themen referiert haben – an Konferenzen, in Podcasts, Blogposts oder dokumentierten Praxis-Use-Cases. Bevorzuge Praktiker:innen.
 Liste 6-10 Personen als Stichpunkte. Pro Person: Name, Funktion/Unternehmen, Land, eine klare Begründung WARUM sie zum Thema passt, und mindestens eine prüfbare Quelle mit URL (Konferenz/Podcast/Blog/Use Case). Keine erfundenen Personen oder Links.` });
     const d = docBlock(b.file); if (d) research.push(d);
-    const { text: found } = await callClaude(research, { web: 8, maxTokens: 3500 });
+    const { text: found } = await callClaude(research, { web: 5, maxTokens: 3500 });
 
     // 2) Strukturieren ohne Websuche
     const structurePrompt =

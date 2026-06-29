@@ -161,3 +161,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
   .wrap{padding:0 16px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* phead: benefit headline + grey function note */
+.phead .benefit{color:var(--ink);font-weight:500;font-size:15px;margin:0 0 4px;max-width:800px}
+.phead .fn{color:var(--muted);font-size:13.5px;margin:0;max-width:800px}

@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet"/>
+<meta name="googlebot" content="noindex, nofollow"/>
 <title>IMC Research Hub · Universität St.Gallen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -30,7 +32,8 @@
   <!-- MARKET RESEARCH -->
   <section class="panel active" id="panel-market" role="tabpanel">
     <div class="phead"><h1>Market Research</h1>
-      <p>Mitbewerber-News (max. 21 Tage) und PESTEL-Analyse (Aktualität < 12 Monate) pro Hauptcluster – mit prüfbaren Quellen. Daten bleiben gespeichert, bis eine neue Analyse läuft.</p></div>
+      <p class="benefit">Behalte den Wettbewerb im Blick und erkenne früh, was eure Weiterbildungen betrifft.</p>
+      <p class="fn">Aktuelle Mitbewerber-News (max. 21 Tage) und PESTEL-Analyse (&lt; 12 Monate) pro Hauptcluster, mit prüfbaren Quellen. Daten bleiben gespeichert, bis eine neue Analyse läuft.</p></div>
     <div class="banner" id="market-banner"></div>
     <div class="bar">
       <button class="btn btn--primary" id="run-market">Analyse jetzt starten</button>
@@ -55,10 +58,10 @@
   <!-- SYLLABUS -->
   <section class="panel" id="panel-syllabus" role="tabpanel">
     <div class="phead"><h1>Syllabus Comparison</h1>
-      <p>Laden Sie Ihren Syllabus und die Syllabi vergleichbarer Mitbewerber-Programme hoch. Sie erhalten eine spezifische, begründete Analyse zu Stärken, Schwächen und Gaps.</p></div>
+      <p class="benefit">Sieh auf einen Blick, wo euer Programm stärker ist – und wo Lücken bestehen.</p>
+      <p class="fn">Euren Syllabus und Mitbewerber-Syllabi (PDF) hochladen; ihr erhaltet eine begründete Analyse zu Stärken, Schwächen und Gaps.</p></div>
     <div class="two-col">
       <div>
-        <div class="field"><label>Weiterbildung (optional)</label><select id="syl-course"></select></div>
         <div class="field"><label>Unser Syllabus (PDF)</label>
           <div class="drop" id="syl-ours-drop">PDF hierher ziehen oder klicken</div>
           <input type="file" id="syl-ours-file" accept="application/pdf" hidden/>
@@ -79,13 +82,14 @@
   <!-- SALES -->
   <section class="panel" id="panel-sales" role="tabpanel">
     <div class="phead"><h1>Sales Assistant</h1>
-      <p>Erst Kurs und LinkedIn-Infos erfassen – danach entweder eine präzise Gesprächsvorbereitung erstellen oder ein Übungsgespräch führen (Chat, optional per Sprache). Beide beziehen sich auf den gewählten Kurs.</p></div>
+      <p class="benefit">Geh gezielter ins Beratungsgespräch und überzeuge mit den richtigen Argumenten.</p>
+      <p class="fn">Aus Informationen zur Person und dem gewählten Kurs entstehen konkrete Gesprächspunkte – plus ein Übungsgespräch (Chat, optional per Sprache).</p></div>
 
     <div class="card" style="margin-bottom:18px">
       <h3>1 · Kontext <span class="note">– gilt für Vorbereitung und Übungsgespräch</span></h3>
       <div class="row2" style="margin-top:12px">
         <div class="field"><label>Kurs *</label><select id="sales-course"></select></div>
-        <div class="field"><label>Personenbezogene Informationen * <span class="note">(LinkedIn, Mailverlauf etc.)</span></label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, bisheriger Mailverlauf …"></textarea></div>
+        <div class="field"><label>Informationen zur Person * <span class="note">(LinkedIn, Mailverlauf etc.)</span></label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, bisheriger Mailverlauf …"></textarea></div>
       </div>
       <div class="field"><label>Syllabus (optional, erhöht die Genauigkeit)</label>
         <textarea id="sales-syllabus" placeholder="Syllabus-Text einfügen … oder unten ein PDF hochladen"></textarea>
@@ -126,7 +130,8 @@
   <!-- BPM -->
   <section class="panel" id="panel-bpm" role="tabpanel">
     <div class="phead"><h1>BPM Finder</h1>
-      <p>Laden Sie das PDF zur „Best Practice in Marketing“-Veranstaltung hoch. Der Assistent sucht passende Referent:innen aus dem DACH-Raum – mit Quellen und Begründung.</p></div>
+      <p class="benefit">Finde schnell passende Praxis-Referent:innen aus dem DACH-Raum.</p>
+      <p class="fn">Veranstaltungs-PDF hochladen; der Assistent schlägt Personen mit Begründung und prüfbaren Quellen vor.</p></div>
     <div class="two-col">
       <div>
         <div class="field"><label>Veranstaltungs-PDF</label>
@@ -144,7 +149,8 @@
   <!-- MRSG -->
   <section class="panel" id="panel-mrsg" role="tabpanel">
     <div class="phead"><h1>Marketing Review St.Gallen</h1>
-      <p>Das Gutachter-Matching der Marketing Review St.Gallen.</p></div>
+      <p class="benefit">Direkter Zugang zum Gutachter-Matching der Marketing Review St.Gallen.</p>
+      <p class="fn">Externes Tool – öffnet in einem neuen Tab.</p></div>
     <div class="card" style="max-width:560px">
       <h3>MRSG · Gutachter-Matching</h3>
       <p class="note" style="margin:0 0 14px">Externes Tool zum Matching von Gutachter:innen für die Marketing Review St.Gallen.</p>
@@ -154,7 +160,9 @@
 
   <!-- SETTINGS -->
   <section class="panel" id="panel-settings" role="tabpanel">
-    <div class="phead"><h1>Einstellungen</h1><p>Modellversion für alle Features wählen und Kosten-Richtwerte verwalten. Suchabos einsehen und löschen.</p></div>
+    <div class="phead"><h1>Einstellungen</h1>
+      <p class="benefit">Steuere Modell, Kosten und automatische Analysen an einem Ort.</p>
+      <p class="fn">Modellversion für alle Features wählen, Kosten-Richtwerte einsehen, automatische Market-Research-Analyse aktivieren und Suchabos verwalten.</p></div>
     <div class="two-col">
       <div class="card">
         <h3>Modell &amp; Kosten</h3>

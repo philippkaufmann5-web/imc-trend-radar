@@ -84,7 +84,7 @@ function renderMarket(data){
     const newsCol=(cc.news||[]).map(newsHTML).join("")||'<p class="empty">–</p>';
     const trendCol=(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}${relBadge(t.relevance)}</div>${t.impact?`<div class="impact">→ ${esc(t.impact)}</div>`:""}<div class="m">${esc(t.date||"")}${t.date?" · ":""}${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>';
     const pestelCol=(cc.pestel||[]).map(p=>`<div class="news-item"><div class="t"><span class="ptag">${esc(p.category||"")}</span>${esc(p.point)}${relBadge(p.relevance)}</div>${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""}<div class="m">${esc(p.date||"")}${p.date?" · ":""}${srcLink(p.source)}</div></div>`).join("")||'<p class="empty">–</p>';
-    box.innerHTML=`<div class="card cross" style="margin-bottom:20px"><div class="clabel"><h3>Clusterübergreifend</h3><span class="badge badge--news">betrifft alle Cluster</span></div>
+    box.innerHTML=`<div class="card cross" style="margin-bottom:20px"><div class="clabel"><h3>Clusterübergreifend</h3></div>
       <div class="cross-grid">
         <div><div class="section-title">News</div>${newsCol}</div>
         <div><div class="section-title">Trends</div>${trendCol}</div>
@@ -137,7 +137,6 @@ async function subAdd(){
 /* ================= SYLLABUS ================= */
 let sylOurs=null, sylComp=[];
 function initSyllabus(){
-  fillCourseSelect($("#syl-course"), true);
   dropZone($("#syl-ours-drop"),$("#syl-ours-file"),files=>{ sylOurs=files[0]; $("#syl-ours-name").textContent=sylOurs?sylOurs.name:""; $("#syl-ours-drop").classList.toggle("has",!!sylOurs); });
   dropZone($("#syl-comp-drop"),$("#syl-comp-file"),files=>{ sylComp=files; $("#syl-comp-name").textContent=files.map(f=>f.name).join(", "); $("#syl-comp-drop").classList.toggle("has",files.length>0); },true);
   $("#run-syllabus").addEventListener("click",runSyllabus);
@@ -145,14 +144,17 @@ function initSyllabus(){
 async function runSyllabus(){
   const msg=$("#syl-msg"); msg.className="form-msg";
   if(!sylOurs){ msg.className="form-msg err"; msg.textContent="Bitte unseren Syllabus hochladen."; return; }
+  const tooBig=[sylOurs,...sylComp].find(f=>f && f.size>4.5*1024*1024);
+  if(tooBig){ msg.className="form-msg err"; msg.textContent=`Datei „${tooBig.name}" ist zu gross (max. 4,5 MB).`; return; }
   const btn=$("#run-syllabus"); btn.disabled=true; btn.innerHTML=spin+"Analyse läuft …";
   try{
     const id=uid();
     const ours=await fileToB64(sylOurs);
     const competitors=[]; for(const f of sylComp){ const b=await fileToB64(f); competitors.push({name:f.name,...b}); }
-    await jpost("/api/syllabus",{id,course:$("#syl-course").value,ours,competitors});
+    const resp=await jpost("/api/syllabus",{id,ours,competitors});
+    if(resp.error) throw new Error(resp.error);
     pollJob(id,$("#syl-result"),renderSyllabus,()=>{ btn.disabled=false; btn.textContent="Analyse starten"; });
-  }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler beim Upload."; btn.disabled=false; btn.textContent="Analyse starten"; }
+  }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler: "+String(e.message||e); btn.disabled=false; btn.textContent="Analyse starten"; }
 }
 function renderSyllabus(r){
   const lis=(arr)=>(arr||[]).map(x=>`<div class="li"><b>${esc(x.point)}</b><span>${esc(x.detail)}</span></div>`).join("")||'<p class="empty">–</p>';
@@ -187,29 +189,42 @@ function salesCtx(){ return { course:$("#sales-course").value, linkedin:$("#sale
 async function salesBody(extra){ const body={...salesCtx(),...extra}; if(salesSylFile){ try{ body.file=await fileToB64(salesSylFile); }catch{} } return body; }
 
 async function salesPrep(){
-  const msg=$("#sales-msg"); msg.className="form-msg";
   const btn=$("#run-sales"); btn.disabled=true; btn.innerHTML=spin+"Erstelle …";
-  const r=await jpost("/api/sales", await salesBody({mode:"prep"}));
-  btn.disabled=false; btn.textContent="Vorbereitung erstellen"; salesGate();
-  $("#sales-prep").innerHTML = r.reply
-    ? `<h3>Gesprächsvorbereitung · ${esc($("#sales-course").value)}</h3><div style="white-space:pre-wrap;font-size:14px">${esc(r.reply)}</div>`
-    : `<p class="form-msg err">${esc(r.error||"Unbekannter Fehler.")}</p>`;
+  $("#sales-prep").innerHTML='<p class="empty">'+spin+'Wird erstellt … (bis ~1 Min.)</p>';
+  try{
+    const id=uid();
+    const resp=await jpost("/api/sales", await salesBody({id,mode:"prep"}));
+    if(resp.error) throw new Error(resp.error);
+    const reply=await pollJobResult(id,{interval:3000,tries:50});
+    $("#sales-prep").innerHTML=`<h3>Gesprächsvorbereitung · ${esc($("#sales-course").value)}</h3><div style="white-space:pre-wrap;font-size:14px">${esc(reply)}</div>`;
+  }catch(e){ $("#sales-prep").innerHTML=`<p class="form-msg err">${esc(String(e.message||e))}</p>`; }
+  btn.textContent="Vorbereitung erstellen"; salesGate();
 }
-function pushMsg(role,text){ const log=$("#sales-log"); const d=document.createElement("div"); d.className="msg "+(role==="user"?"user":"bot"); d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+function pushMsg(role,text){ const log=$("#sales-log"); const d=document.createElement("div"); d.className="msg "+(role==="user"?"user":"bot"); d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; }
 async function salesStart(){
   salesChat=[]; $("#sales-log").innerHTML="";
   const btn=$("#sales-start"); btn.disabled=true; btn.innerHTML=spin+"…";
-  const r=await jpost("/api/sales", await salesBody({mode:"roleplay",messages:[]}));
-  btn.disabled=false; btn.textContent="Übungsgespräch neu starten";
-  if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); speak(r.reply); }
-  else toast(r.error||"Fehler.");
+  const typing=pushMsg("bot","…");
+  try{
+    const id=uid();
+    const resp=await jpost("/api/sales", await salesBody({id,mode:"roleplay",messages:[]}));
+    if(resp.error) throw new Error(resp.error);
+    const reply=await pollJobResult(id,{interval:2500,tries:50});
+    typing.remove(); salesChat.push({role:"assistant",content:reply}); pushMsg("bot",reply); speak(reply);
+  }catch(e){ typing.remove(); toast(String(e.message||e)); }
+  btn.textContent="Übungsgespräch neu starten"; salesGate();
 }
 async function salesSend(){
   const inp=$("#sales-chat-input"); const t=inp.value.trim(); if(!t) return;
   inp.value=""; pushMsg("user",t); salesChat.push({role:"user",content:t});
-  const r=await jpost("/api/sales", await salesBody({mode:"roleplay",messages:salesChat}));
-  if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); speak(r.reply); }
-  else toast(r.error||"Fehler.");
+  const typing=pushMsg("bot","…");
+  try{
+    const id=uid();
+    const resp=await jpost("/api/sales", await salesBody({id,mode:"roleplay",messages:salesChat}));
+    if(resp.error) throw new Error(resp.error);
+    const reply=await pollJobResult(id,{interval:2500,tries:50});
+    typing.remove(); salesChat.push({role:"assistant",content:reply}); pushMsg("bot",reply); speak(reply);
+  }catch(e){ typing.remove(); toast(String(e.message||e)); }
 }
 /* audio: speech-to-text input + text-to-speech output (Web Speech API) */
 function initAudio(){
@@ -233,18 +248,20 @@ function initBpm(){
 async function runBpm(){
   const msg=$("#bpm-msg"); msg.className="form-msg";
   if(!bpmFile){ msg.className="form-msg err"; msg.textContent="Bitte das Veranstaltungs-PDF hochladen."; return; }
+  if(bpmFile.size>4.5*1024*1024){ msg.className="form-msg err"; msg.textContent=`Datei „${bpmFile.name}" ist zu gross (max. 4,5 MB).`; return; }
   const btn=$("#run-bpm"); btn.disabled=true; btn.innerHTML=spin+"Suche läuft …";
   try{
     const id=uid(); const file=await fileToB64(bpmFile);
-    await jpost("/api/bpm",{id,file});
+    const resp=await jpost("/api/bpm",{id,file});
+    if(resp.error) throw new Error(resp.error);
     pollJob(id,$("#bpm-result"),renderBpm,()=>{ btn.disabled=false; btn.textContent="Referent:innen suchen"; });
-  }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler beim Upload."; btn.disabled=false; btn.textContent="Referent:innen suchen"; }
+  }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler: "+String(e.message||e); btn.disabled=false; btn.textContent="Referent:innen suchen"; }
 }
 function renderBpm(list){
   if(!Array.isArray(list)||!list.length) return '<p class="empty">Keine passenden Personen gefunden.</p>';
   return `<h3>Vorgeschlagene Referent:innen</h3>`+list.map(p=>`<div class="person"><div class="nm">${esc(p.name)}<span class="flag">${esc(p.country||"DACH")}</span></div>
-    <div class="ro">${esc(p.role||"")}</div><div style="font-size:13px;margin:6px 0">${esc(p.why||"")}</div>
-    <div class="ev">${(p.evidence||[]).map(e=>`<a class="evtag" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.type||"Quelle")}: ${esc(e.title||"Link")} ↗</a>`).join("")}</div></div>`).join("");
+    <div class="ro">${esc(p.role||"")}</div><div style="font-size:13px;margin:6px 0"><b>Warum passend:</b> ${esc(p.why||"")}</div>
+    <div class="ev">${(p.evidence||[]).length?(p.evidence).map(e=>`<a class="evtag" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.type||"Quelle")}: ${esc(e.title||"Link")} ↗</a>`).join(""):'<span class="note">Keine Quelle angegeben</span>'}</div></div>`).join("");
 }
 
 /* ================= SETTINGS ================= */
@@ -313,13 +330,24 @@ function dropZone(zone,input,cb,multi){
   zone.addEventListener("drop",ev=>{ const f=[...ev.dataTransfer.files].filter(x=>x.type==="application/pdf"); cb(multi?f:f.slice(0,1)); });
 }
 function pollJob(id,target,render,done){
-  target.innerHTML='<p class="empty">'+spin+'Wird analysiert … (1–3 Min.)</p>';
+  target.innerHTML='<p class="empty">'+spin+'Wird analysiert … (1–5 Min.)</p>';
   let n=0; const iv=setInterval(async()=>{ n++;
     const d=await jget("/api/job?id="+id);
     if(d.status==="ready"){ target.innerHTML=render(d.result); clearInterval(iv); done&&done(); }
     else if(d.status==="error"){ target.innerHTML='<p class="form-msg err">Fehler: '+esc(d.error||"")+'</p>'; clearInterval(iv); done&&done(); }
-    else if(n>=40){ target.innerHTML='<p class="empty">Zeitüberschreitung – bitte erneut versuchen.</p>'; clearInterval(iv); done&&done(); }
-  },5000);
+    else if(n>=70){ target.innerHTML='<p class="empty">Zeitüberschreitung – bitte erneut versuchen.</p>'; clearInterval(iv); done&&done(); }
+  },6000);
+}
+function pollJobResult(id,opts={}){
+  const interval=opts.interval||3000, tries=opts.tries||80;
+  return new Promise((resolve,reject)=>{
+    let n=0; const iv=setInterval(async()=>{ n++;
+      const d=await jget("/api/job?id="+id);
+      if(d.status==="ready"){ clearInterval(iv); resolve(d.result); }
+      else if(d.status==="error"){ clearInterval(iv); reject(new Error(d.error||"Fehler")); }
+      else if(n>=tries){ clearInterval(iv); reject(new Error("Zeitüberschreitung – bitte erneut versuchen.")); }
+    },interval);
+  });
 }
 
 /* ---------- init ---------- */
