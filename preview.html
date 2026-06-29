@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet"/>
 <meta name="googlebot" content="noindex, nofollow"/>
-<title>IMC Research Hub · Universität St.Gallen</title>
+<title>IMC KI-Assistant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -61,7 +61,7 @@ h1,h2,h3{letter-spacing:-.02em}
 .cross-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
 .cross-grid>div .section-title{margin-top:0}
 .impact{font-size:12.5px;color:var(--green-dark);font-style:italic;margin:3px 0}
-.ptag{font-size:10.5px;font-weight:600;color:#fff;background:var(--green);border-radius:4px;padding:1px 6px;margin-right:4px;font-style:normal;white-space:nowrap}
+.ptag{font-size:10.5px;font-weight:600;color:#55605a;background:#e7ebe8;border-radius:4px;padding:1px 6px;margin-right:4px;font-style:normal;white-space:nowrap}
 @media(max-width:820px){.cross-grid{grid-template-columns:1fr}}
 
 /* panel header */
@@ -178,12 +178,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
 .phead .benefit{color:var(--ink);font-weight:500;font-size:15px;margin:0 0 4px;max-width:800px}
 .phead .fn{color:var(--muted);font-size:13.5px;margin:0;max-width:800px}
 
+/* Market Research: Zusammenfassung / Handlungsempfehlungen */
+.reco-box{background:#fff;border:1px solid var(--line);border-left:4px solid var(--green);border-radius:12px;padding:16px 18px;margin-bottom:20px}
+.reco-box h3{margin:0 0 10px;font-size:15px}
+.reco-box ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 22px}
+.reco-box li{font-size:13.5px;line-height:1.45;padding-left:18px;position:relative}
+.reco-box li:before{content:"\25B8";position:absolute;left:0;color:var(--green)}
+@media(max-width:760px){.reco-box ul{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
 <header class="hero"><div class="wrap hero__in">
   <p class="hero__eyebrow">Universität St.Gallen</p>
-  <h1 class="hero__title">IMC Assistant</h1>
+  <h1 class="hero__title">IMC KI-Assistant</h1>
   <p class="hero__tasks">Mitbewerber-News &amp; PESTEL · Syllabus-Vergleich · Verkaufsgespräche vorbereiten · Referent:innen finden</p>
 </div></header>
 
@@ -209,6 +217,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
       <span class="meta" id="market-last">Noch keine Analyse durchgeführt.</span>
       <span class="badge badge--none" id="market-auto">Auto: aus</span>
     </div>
+    <div id="market-reco"></div>
     <div id="cross-cluster"></div>
     <div class="grid" id="market-grid"></div>
 
@@ -273,7 +282,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
       <div class="card">
         <h3>2a · Gesprächsvorbereitung</h3>
         <p class="note" style="margin:4px 0 12px">Präzise auf die Person und den Kurs „<span id="sales-course-label-a">–</span>“ zugeschnittene Punkte fürs Informationsgespräch.</p>
-        <button class="btn btn--primary" id="run-sales" disabled>Vorbereitung erstellen</button>
+        <button class="btn btn--primary" id="run-sales" disabled>Vorbereitung starten</button>
         <p class="form-msg" id="sales-msg"></p>
         <div id="sales-prep" class="result"></div>
       </div>
@@ -289,7 +298,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
           </div>
         </div>
         <div class="bar" style="margin-top:10px">
-          <button class="btn btn--sm" id="sales-start" disabled>Übungsgespräch starten</button>
+          <button class="btn btn--sm" id="sales-start" disabled>Gespräch neu starten</button>
           <label class="note" style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="sales-tts"> Antworten vorlesen</label>
         </div>
       </div>
@@ -426,9 +435,14 @@ function newsHTML(n){
 function renderMarket(data){
   const grid=$("#market-grid"); grid.innerHTML="";
   const box=$("#cross-cluster"); box.innerHTML="";
+  const reco=$("#market-reco"); if(reco) reco.innerHTML="";
   if(!data || data.status==="empty" || !data.clusters){ grid.innerHTML='<p class="empty">Noch keine Daten – starten Sie eine Analyse.</p>'; return; }
   if(data.status==="running"){ $("#market-last").textContent="Analyse läuft …"; return; }
   $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleString("de-CH") : "";
+
+  if(reco && Array.isArray(data.recommendations) && data.recommendations.length){
+    reco.innerHTML=`<div class="reco-box"><h3>Zusammenfassung / Handlungsempfehlungen</h3><ul>${data.recommendations.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`;
+  }
 
   // surface errors / diagnostics
   const cc=data.crossCluster||{};
@@ -472,7 +486,7 @@ async function runMarket(){
   const btn=$("#run-market"); const before=(await jget("/api/market")).generatedAt;
   btn.disabled=true; btn.innerHTML=spin+"Analyse läuft …"; marketPolling=true;
   $("#market-banner").className="banner show"; $("#market-banner").textContent="Recherche gestartet – das kann 2–4 Minuten dauern. Sie können die Seite offen lassen.";
-  try{ await fetch("/api/analyze-market",{method:"POST"}); }catch{ toast("Start fehlgeschlagen."); resetMarket(); return; }
+  try{ await fetch("/.netlify/functions/analyze-market-background",{method:"POST"}); }catch{ toast("Start fehlgeschlagen."); resetMarket(); return; }
   let n=0; const iv=setInterval(async()=>{ n++;
     const d=await jget("/api/market");
     if(d.status==="ready"&&d.generatedAt!==before){ renderMarket(d); toast("Analyse fertig."); clearInterval(iv); resetMarket(); }
@@ -505,14 +519,14 @@ function initSyllabus(){
 async function runSyllabus(){
   const msg=$("#syl-msg"); msg.className="form-msg";
   if(!sylOurs){ msg.className="form-msg err"; msg.textContent="Bitte unseren Syllabus hochladen."; return; }
-  const tooBig=[sylOurs,...sylComp].find(f=>f && f.size>4.5*1024*1024);
-  if(tooBig){ msg.className="form-msg err"; msg.textContent=`Datei „${tooBig.name}" ist zu gross (max. 4,5 MB).`; return; }
+  const tooBig=[sylOurs,...sylComp].find(f=>f && f.size>4*1024*1024);
+  if(tooBig){ msg.className="form-msg err"; msg.textContent=`Datei „${tooBig.name}" ist zu gross (max. 4 MB).`; return; }
   const btn=$("#run-syllabus"); btn.disabled=true; btn.innerHTML=spin+"Analyse läuft …";
   try{
     const id=uid();
     const ours=await fileToB64(sylOurs);
     const competitors=[]; for(const f of sylComp){ const b=await fileToB64(f); competitors.push({name:f.name,...b}); }
-    const resp=await jpost("/api/syllabus",{id,ours,competitors});
+    const resp=await jpost("/.netlify/functions/syllabus-background",{id,ours,competitors});
     if(resp.error) throw new Error(resp.error);
     pollJob(id,$("#syl-result"),renderSyllabus,()=>{ btn.disabled=false; btn.textContent="Analyse starten"; });
   }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler: "+String(e.message||e); btn.disabled=false; btn.textContent="Analyse starten"; }
@@ -528,7 +542,7 @@ function renderSyllabus(r){
 let salesChat=[], recog=null, recognizing=false, salesSylFile=null;
 function initSales(){
   fillCourseSelect($("#sales-course"),true);
-  $("#run-sales").addEventListener("click",salesPrep);
+  $("#run-sales").addEventListener("click",salesStartAll);
   $("#sales-start").addEventListener("click",salesStart);
   $("#sales-send").addEventListener("click",salesSend);
   $("#sales-course").addEventListener("change",salesGate);
@@ -549,17 +563,21 @@ function salesGate(){
 function salesCtx(){ return { course:$("#sales-course").value, linkedin:$("#sales-linkedin").value.trim(), syllabusText:$("#sales-syllabus").value.trim() }; }
 async function salesBody(extra){ const body={...salesCtx(),...extra}; if(salesSylFile){ try{ body.file=await fileToB64(salesSylFile); }catch{} } return body; }
 
+async function salesStartAll(){
+  const btn=$("#run-sales"); if(btn.disabled) return;
+  btn.disabled=true; btn.innerHTML=spin+"Wird vorbereitet …";
+  await Promise.all([salesPrep(), salesStart()]);
+  btn.innerHTML="Vorbereitung starten"; salesGate();
+}
 async function salesPrep(){
-  const btn=$("#run-sales"); btn.disabled=true; btn.innerHTML=spin+"Erstelle …";
-  $("#sales-prep").innerHTML='<p class="empty">'+spin+'Wird erstellt … (bis ~1 Min.)</p>';
+  $("#sales-prep").innerHTML='<p class="empty">'+spin+'Vorbereitung wird erstellt …</p>';
   try{
     const id=uid();
-    const resp=await jpost("/api/sales", await salesBody({id,mode:"prep"}));
+    const resp=await jpost("/.netlify/functions/sales-background", await salesBody({id,mode:"prep"}));
     if(resp.error) throw new Error(resp.error);
     const reply=await pollJobResult(id,{interval:3000,tries:50});
     $("#sales-prep").innerHTML=`<h3>Gesprächsvorbereitung · ${esc($("#sales-course").value)}</h3><div style="white-space:pre-wrap;font-size:14px">${esc(reply)}</div>`;
   }catch(e){ $("#sales-prep").innerHTML=`<p class="form-msg err">${esc(String(e.message||e))}</p>`; }
-  btn.textContent="Vorbereitung erstellen"; salesGate();
 }
 function pushMsg(role,text){ const log=$("#sales-log"); const d=document.createElement("div"); d.className="msg "+(role==="user"?"user":"bot"); d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; }
 async function salesStart(){
@@ -568,12 +586,12 @@ async function salesStart(){
   const typing=pushMsg("bot","…");
   try{
     const id=uid();
-    const resp=await jpost("/api/sales", await salesBody({id,mode:"roleplay",messages:[]}));
+    const resp=await jpost("/.netlify/functions/sales-background", await salesBody({id,mode:"roleplay",messages:[]}));
     if(resp.error) throw new Error(resp.error);
     const reply=await pollJobResult(id,{interval:2500,tries:50});
     typing.remove(); salesChat.push({role:"assistant",content:reply}); pushMsg("bot",reply); speak(reply);
   }catch(e){ typing.remove(); toast(String(e.message||e)); }
-  btn.textContent="Übungsgespräch neu starten"; salesGate();
+  btn.textContent="Gespräch neu starten"; salesGate();
 }
 async function salesSend(){
   const inp=$("#sales-chat-input"); const t=inp.value.trim(); if(!t) return;
@@ -581,7 +599,7 @@ async function salesSend(){
   const typing=pushMsg("bot","…");
   try{
     const id=uid();
-    const resp=await jpost("/api/sales", await salesBody({id,mode:"roleplay",messages:salesChat}));
+    const resp=await jpost("/.netlify/functions/sales-background", await salesBody({id,mode:"roleplay",messages:salesChat}));
     if(resp.error) throw new Error(resp.error);
     const reply=await pollJobResult(id,{interval:2500,tries:50});
     typing.remove(); salesChat.push({role:"assistant",content:reply}); pushMsg("bot",reply); speak(reply);
@@ -609,11 +627,11 @@ function initBpm(){
 async function runBpm(){
   const msg=$("#bpm-msg"); msg.className="form-msg";
   if(!bpmFile){ msg.className="form-msg err"; msg.textContent="Bitte das Veranstaltungs-PDF hochladen."; return; }
-  if(bpmFile.size>4.5*1024*1024){ msg.className="form-msg err"; msg.textContent=`Datei „${bpmFile.name}" ist zu gross (max. 4,5 MB).`; return; }
+  if(bpmFile.size>4*1024*1024){ msg.className="form-msg err"; msg.textContent=`Datei „${bpmFile.name}" ist zu gross (max. 4 MB).`; return; }
   const btn=$("#run-bpm"); btn.disabled=true; btn.innerHTML=spin+"Suche läuft …";
   try{
     const id=uid(); const file=await fileToB64(bpmFile);
-    const resp=await jpost("/api/bpm",{id,file});
+    const resp=await jpost("/.netlify/functions/bpm-background",{id,file});
     if(resp.error) throw new Error(resp.error);
     pollJob(id,$("#bpm-result"),renderBpm,()=>{ btn.disabled=false; btn.textContent="Referent:innen suchen"; });
   }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler: "+String(e.message||e); btn.disabled=false; btn.textContent="Referent:innen suchen"; }

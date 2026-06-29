@@ -16,6 +16,7 @@ export async function callClaude(content, options = {}) {
       ? options.messages
       : [{ role: "user", content }],
   };
+  if (typeof options.temperature === "number") body.temperature = options.temperature;
   if (options.system) body.system = options.system;
   if (options.web) body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: options.web }];
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet"/>
 <meta name="googlebot" content="noindex, nofollow"/>
-<title>IMC Research Hub · Universität St.Gallen</title>
+<title>IMC KI-Assistant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -14,7 +14,7 @@
 <body>
 <header class="hero"><div class="wrap hero__in">
   <p class="hero__eyebrow">Universität St.Gallen</p>
-  <h1 class="hero__title">IMC Assistant</h1>
+  <h1 class="hero__title">IMC KI-Assistant</h1>
   <p class="hero__tasks">Mitbewerber-News &amp; PESTEL · Syllabus-Vergleich · Verkaufsgespräche vorbereiten · Referent:innen finden</p>
 </div></header>
 
@@ -40,6 +40,7 @@
       <span class="meta" id="market-last">Noch keine Analyse durchgeführt.</span>
       <span class="badge badge--none" id="market-auto">Auto: aus</span>
     </div>
+    <div id="market-reco"></div>
     <div id="cross-cluster"></div>
     <div class="grid" id="market-grid"></div>
 
@@ -104,7 +105,7 @@
       <div class="card">
         <h3>2a · Gesprächsvorbereitung</h3>
         <p class="note" style="margin:4px 0 12px">Präzise auf die Person und den Kurs „<span id="sales-course-label-a">–</span>“ zugeschnittene Punkte fürs Informationsgespräch.</p>
-        <button class="btn btn--primary" id="run-sales" disabled>Vorbereitung erstellen</button>
+        <button class="btn btn--primary" id="run-sales" disabled>Vorbereitung starten</button>
         <p class="form-msg" id="sales-msg"></p>
         <div id="sales-prep" class="result"></div>
       </div>
@@ -120,7 +121,7 @@
           </div>
         </div>
         <div class="bar" style="margin-top:10px">
-          <button class="btn btn--sm" id="sales-start" disabled>Übungsgespräch starten</button>
+          <button class="btn btn--sm" id="sales-start" disabled>Gespräch neu starten</button>
           <label class="note" style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="sales-tts"> Antworten vorlesen</label>
         </div>
       </div>

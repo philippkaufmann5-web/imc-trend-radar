@@ -65,9 +65,14 @@ function newsHTML(n){
 function renderMarket(data){
   const grid=$("#market-grid"); grid.innerHTML="";
   const box=$("#cross-cluster"); box.innerHTML="";
+  const reco=$("#market-reco"); if(reco) reco.innerHTML="";
   if(!data || data.status==="empty" || !data.clusters){ grid.innerHTML='<p class="empty">Noch keine Daten – starten Sie eine Analyse.</p>'; return; }
   if(data.status==="running"){ $("#market-last").textContent="Analyse läuft …"; return; }
   $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleString("de-CH") : "";
+
+  if(reco && Array.isArray(data.recommendations) && data.recommendations.length){
+    reco.innerHTML=`<div class="reco-box"><h3>Zusammenfassung / Handlungsempfehlungen</h3><ul>${data.recommendations.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`;
+  }
 
   // surface errors / diagnostics
   const cc=data.crossCluster||{};
@@ -111,7 +116,7 @@ async function runMarket(){
   const btn=$("#run-market"); const before=(await jget("/api/market")).generatedAt;
   btn.disabled=true; btn.innerHTML=spin+"Analyse läuft …"; marketPolling=true;
   $("#market-banner").className="banner show"; $("#market-banner").textContent="Recherche gestartet – das kann 2–4 Minuten dauern. Sie können die Seite offen lassen.";
-  try{ await fetch("/api/analyze-market",{method:"POST"}); }catch{ toast("Start fehlgeschlagen."); resetMarket(); return; }
+  try{ await fetch("/.netlify/functions/analyze-market-background",{method:"POST"}); }catch{ toast("Start fehlgeschlagen."); resetMarket(); return; }
   let n=0; const iv=setInterval(async()=>{ n++;
     const d=await jget("/api/market");
     if(d.status==="ready"&&d.generatedAt!==before){ renderMarket(d); toast("Analyse fertig."); clearInterval(iv); resetMarket(); }
@@ -144,14 +149,14 @@ function initSyllabus(){
 async function runSyllabus(){
   const msg=$("#syl-msg"); msg.className="form-msg";
   if(!sylOurs){ msg.className="form-msg err"; msg.textContent="Bitte unseren Syllabus hochladen."; return; }
-  const tooBig=[sylOurs,...sylComp].find(f=>f && f.size>4.5*1024*1024);
-  if(tooBig){ msg.className="form-msg err"; msg.textContent=`Datei „${tooBig.name}" ist zu gross (max. 4,5 MB).`; return; }
+  const tooBig=[sylOurs,...sylComp].find(f=>f && f.size>4*1024*1024);
+  if(tooBig){ msg.className="form-msg err"; msg.textContent=`Datei „${tooBig.name}" ist zu gross (max. 4 MB).`; return; }
   const btn=$("#run-syllabus"); btn.disabled=true; btn.innerHTML=spin+"Analyse läuft …";
   try{
     const id=uid();
     const ours=await fileToB64(sylOurs);
     const competitors=[]; for(const f of sylComp){ const b=await fileToB64(f); competitors.push({name:f.name,...b}); }
-    const resp=await jpost("/api/syllabus",{id,ours,competitors});
+    const resp=await jpost("/.netlify/functions/syllabus-background",{id,ours,competitors});
     if(resp.error) throw new Error(resp.error);
     pollJob(id,$("#syl-result"),renderSyllabus,()=>{ btn.disabled=false; btn.textContent="Analyse starten"; });
   }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler: "+String(e.message||e); btn.disabled=false; btn.textContent="Analyse starten"; }
@@ -167,7 +172,7 @@ function renderSyllabus(r){
 let salesChat=[], recog=null, recognizing=false, salesSylFile=null;
 function initSales(){
   fillCourseSelect($("#sales-course"),true);
-  $("#run-sales").addEventListener("click",salesPrep);
+  $("#run-sales").addEventListener("click",salesStartAll);
   $("#sales-start").addEventListener("click",salesStart);
   $("#sales-send").addEventListener("click",salesSend);
   $("#sales-course").addEventListener("change",salesGate);
@@ -188,17 +193,21 @@ function salesGate(){
 function salesCtx(){ return { course:$("#sales-course").value, linkedin:$("#sales-linkedin").value.trim(), syllabusText:$("#sales-syllabus").value.trim() }; }
 async function salesBody(extra){ const body={...salesCtx(),...extra}; if(salesSylFile){ try{ body.file=await fileToB64(salesSylFile); }catch{} } return body; }
 
+async function salesStartAll(){
+  const btn=$("#run-sales"); if(btn.disabled) return;
+  btn.disabled=true; btn.innerHTML=spin+"Wird vorbereitet …";
+  await Promise.all([salesPrep(), salesStart()]);
+  btn.innerHTML="Vorbereitung starten"; salesGate();
+}
 async function salesPrep(){
-  const btn=$("#run-sales"); btn.disabled=true; btn.innerHTML=spin+"Erstelle …";
-  $("#sales-prep").innerHTML='<p class="empty">'+spin+'Wird erstellt … (bis ~1 Min.)</p>';
+  $("#sales-prep").innerHTML='<p class="empty">'+spin+'Vorbereitung wird erstellt …</p>';
   try{
     const id=uid();
-    const resp=await jpost("/api/sales", await salesBody({id,mode:"prep"}));
+    const resp=await jpost("/.netlify/functions/sales-background", await salesBody({id,mode:"prep"}));
     if(resp.error) throw new Error(resp.error);
     const reply=await pollJobResult(id,{interval:3000,tries:50});
     $("#sales-prep").innerHTML=`<h3>Gesprächsvorbereitung · ${esc($("#sales-course").value)}</h3><div style="white-space:pre-wrap;font-size:14px">${esc(reply)}</div>`;
   }catch(e){ $("#sales-prep").innerHTML=`<p class="form-msg err">${esc(String(e.message||e))}</p>`; }
-  btn.textContent="Vorbereitung erstellen"; salesGate();
 }
 function pushMsg(role,text){ const log=$("#sales-log"); const d=document.createElement("div"); d.className="msg "+(role==="user"?"user":"bot"); d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; }
 async function salesStart(){
@@ -207,12 +216,12 @@ async function salesStart(){
   const typing=pushMsg("bot","…");
   try{
     const id=uid();
-    const resp=await jpost("/api/sales", await salesBody({id,mode:"roleplay",messages:[]}));
+    const resp=await jpost("/.netlify/functions/sales-background", await salesBody({id,mode:"roleplay",messages:[]}));
     if(resp.error) throw new Error(resp.error);
     const reply=await pollJobResult(id,{interval:2500,tries:50});
     typing.remove(); salesChat.push({role:"assistant",content:reply}); pushMsg("bot",reply); speak(reply);
   }catch(e){ typing.remove(); toast(String(e.message||e)); }
-  btn.textContent="Übungsgespräch neu starten"; salesGate();
+  btn.textContent="Gespräch neu starten"; salesGate();
 }
 async function salesSend(){
   const inp=$("#sales-chat-input"); const t=inp.value.trim(); if(!t) return;
@@ -220,7 +229,7 @@ async function salesSend(){
   const typing=pushMsg("bot","…");
   try{
     const id=uid();
-    const resp=await jpost("/api/sales", await salesBody({id,mode:"roleplay",messages:salesChat}));
+    const resp=await jpost("/.netlify/functions/sales-background", await salesBody({id,mode:"roleplay",messages:salesChat}));
     if(resp.error) throw new Error(resp.error);
     const reply=await pollJobResult(id,{interval:2500,tries:50});
     typing.remove(); salesChat.push({role:"assistant",content:reply}); pushMsg("bot",reply); speak(reply);
@@ -248,11 +257,11 @@ function initBpm(){
 async function runBpm(){
   const msg=$("#bpm-msg"); msg.className="form-msg";
   if(!bpmFile){ msg.className="form-msg err"; msg.textContent="Bitte das Veranstaltungs-PDF hochladen."; return; }
-  if(bpmFile.size>4.5*1024*1024){ msg.className="form-msg err"; msg.textContent=`Datei „${bpmFile.name}" ist zu gross (max. 4,5 MB).`; return; }
+  if(bpmFile.size>4*1024*1024){ msg.className="form-msg err"; msg.textContent=`Datei „${bpmFile.name}" ist zu gross (max. 4 MB).`; return; }
   const btn=$("#run-bpm"); btn.disabled=true; btn.innerHTML=spin+"Suche läuft …";
   try{
     const id=uid(); const file=await fileToB64(bpmFile);
-    const resp=await jpost("/api/bpm",{id,file});
+    const resp=await jpost("/.netlify/functions/bpm-background",{id,file});
     if(resp.error) throw new Error(resp.error);
     pollJob(id,$("#bpm-result"),renderBpm,()=>{ btn.disabled=false; btn.textContent="Referent:innen suchen"; });
   }catch(e){ msg.className="form-msg err"; msg.textContent="Fehler: "+String(e.message||e); btn.disabled=false; btn.textContent="Referent:innen suchen"; }

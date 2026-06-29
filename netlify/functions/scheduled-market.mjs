@@ -18,6 +18,6 @@ export default async (req) => {
   if (Date.now() - last < DAYS[mode] * 86400000) return new Response("not due", { status: 200 });
 
   const origin = new URL(req.url).origin;
-  await fetch(`${origin}/api/analyze-market`, { method: "POST" });
+  await fetch(`${origin}/.netlify/functions/analyze-market-background`, { method: "POST" });
   return new Response("triggered", { status: 200 });
 };

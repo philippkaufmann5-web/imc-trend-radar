@@ -5,7 +5,6 @@
 import { callClaude, extractJSON, docBlock } from "./lib/claude.mjs";
 import { setJob } from "./lib/store.mjs";
 
-export const config = { path: "/api/syllabus" };
 
 export default async (req) => {
   let b; try { b = await req.json(); } catch { return new Response("bad json", { status: 400 }); }
