@@ -1,7 +1,9 @@
 // POST /api/sales (background) – Body: { id, mode, course, linkedin, syllabusText?, file?, messages? }
 // Schreibt jobs:<id> = { status:"ready", result: <reply> }. Frontend pollt /api/job?id=.
-import { callClaude, docBlock } from "./lib/claude.mjs";
+import { callClaude } from "./lib/claude.mjs";
 import { setJob } from "./lib/store.mjs";
+
+export const config = { path: "/api/sales" };
 
 
 export default async (req) => {
@@ -27,18 +29,6 @@ export default async (req) => {
       messages = (b.messages && b.messages.length) ? b.messages.slice(-12) : [{ role: "user", content: "Erstelle die Gesprächsvorbereitung." }];
     }
 
-    if (b.file) {
-      const idx = messages.findIndex((m) => m.role === "user");
-      const doc = docBlock(b.file);
-      if (doc) {
-        if (idx >= 0) {
-          const orig = messages[idx].content;
-          messages[idx] = { role: "user", content: [doc, { type: "text", text: typeof orig === "string" ? orig : "Syllabus siehe Dokument." }] };
-        } else {
-          messages.unshift({ role: "user", content: [doc, { type: "text", text: "Syllabus siehe Dokument." }] });
-        }
-      }
-    }
 
     const { text } = await callClaude(null, { system, messages, maxTokens: b.mode === "roleplay" ? 700 : 1600 });
     await setJob(id, { status: "ready", result: text });

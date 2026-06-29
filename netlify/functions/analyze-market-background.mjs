@@ -6,6 +6,8 @@ import { callClaude, extractJSON } from "./lib/claude.mjs";
 import { CLUSTERS } from "./lib/clusters.mjs";
 import { setJSON, getJSON, getSubscribers, sendEmail } from "./lib/store.mjs";
 
+export const config = { path: "/api/analyze-market" };
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 function researchCluster(c) {
@@ -13,11 +15,13 @@ function researchCluster(c) {
 1) MITBEWERBER-NEWS im DACH-Raum (${c.competitorsHint}), maximal 21 Tage alt: neue Weiterbildungs-Angebote, Programme oder relevante Veranstaltungen. Je Fund: Titel, Datum, Anbieter, 1 Satz, Quellen-URL. Wenn nichts <21 Tage: "KEINE NEWS".
 2) PESTEL (Aktualität max. 12 Monate) mit Bezug zur Weiterbildung. Pro Kategorie (Politisch, Ökonomisch, Sozial, Technologisch, Ökologisch, Rechtlich) 1-2 Punkte mit Quellen-URL.
 Notiere zu JEDEM Punkt sehr kurz, wie relevant er für unser Institut/unsere Weiterbildungen ist (hoch oder mittel) und warum. Antworte als Stichpunkte (mit Datum + URL).
-WICHTIG (gegen Halluzination): Erfinde KEINE Zahlen, Prozente oder Statistiken. Übernimm nur Aussagen, die wirklich in der Quelle stehen. Wenn eine Zahl nicht belegt ist, lass sie weg und formuliere qualitativ. Verlinke nur Quellen, die die Aussage tatsächlich stützen.`;
+WICHTIG (gegen Halluzination): Erfinde KEINE Zahlen, Prozente oder Statistiken. Übernimm nur Aussagen, die wirklich in der Quelle stehen. Wenn eine Zahl nicht belegt ist, lass sie weg und formuliere qualitativ. Verlinke nur Quellen, die die Aussage tatsächlich stützen.
+Schliesse Quellen der Universität St.Gallen bzw. des IMC selbst aus (insbesondere Domains mit unisg.ch). Wir wollen Markt-/Mitbewerber-Infos, nicht unsere eigenen Beiträge.`;
 }
 const researchCross = `Heutiges Datum: ${today()}. Recherchiere im Web für das IMC der Universität St.Gallen Entwicklungen, die ALLE Weiterbildungsbereiche (Marketing, Sales, Kommunikation, Einkauf) ZUGLEICH betreffen – z. B. neue Institute an Schweizer Hochschulen, Akkreditierungs-/Förderregeln, übergreifende Trends der Executive Education (Online-Buchung, KI-Tutoren, Preise, Demografie). NUR was wirklich ALLE betrifft; Bereichsspezifisches weglassen.
 Liefere drei Blöcke als Stichpunkte (mit Datum + URL): (A) NEWS (max. 21 Tage), (B) TRENDS (max. 12 Monate), (C) PESTEL (max. 12 Monate, mit Kategorie). Notiere je Punkt kurz Relevanz (hoch/mittel) und warum.
-WICHTIG (gegen Halluzination): Erfinde KEINE Zahlen, Prozente oder Statistiken. Übernimm nur Aussagen, die wirklich in der Quelle stehen; sonst qualitativ formulieren. Nur Quellen, die die Aussage stützen.`;
+WICHTIG (gegen Halluzination): Erfinde KEINE Zahlen, Prozente oder Statistiken. Übernimm nur Aussagen, die wirklich in der Quelle stehen; sonst qualitativ formulieren. Nur Quellen, die die Aussage stützen.
+Schliesse Quellen der Universität St.Gallen bzw. des IMC selbst aus (insbesondere Domains mit unisg.ch).`;
 
 function structureCluster(research) {
   return `Wandle die Rechercheergebnisse in GENAU dieses JSON um. Gib NUR das JSON-Objekt aus – kein Markdown, keine Auslassungen, gültiges JSON mit escapten Anführungszeichen:
@@ -92,6 +96,17 @@ export default async () => {
       pestel: results[i].pestel || {},
       error: results[i].error,
     }));
+
+    // IMC-Eigenquellen (unisg.ch) entfernen – wir wollen nur Markt-/Mitbewerber-Infos
+    const isOwn = (x) => x && x.source && /unisg\.ch/i.test(x.source.url || "");
+    const stripOwn = (arr) => (arr || []).filter((x) => !isOwn(x));
+    for (const c of clusters) {
+      c.news = stripOwn(c.news);
+      for (const k of Object.keys(c.pestel || {})) c.pestel[k] = stripOwn(c.pestel[k]);
+    }
+    cross.news = stripOwn(cross.news);
+    cross.trends = stripOwn(cross.trends);
+    cross.pestel = stripOwn(cross.pestel);
     const anyError = clusters.some((c) => c.error) || cross.error;
     const recommendations = await summarize(clusters, cross);
     const payload = {
