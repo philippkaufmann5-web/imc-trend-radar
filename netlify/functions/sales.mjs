@@ -2,7 +2,7 @@
 // Body: { mode:"prep"|"roleplay", course, linkedin, syllabusText?, messages:[{role,content}] }
 // Gibt { reply } zurück.
 
-import { callClaude } from "./lib/claude.mjs";
+import { callClaude, docBlock } from "./lib/claude.mjs";
 
 export const config = { path: "/api/sales" };
 
@@ -26,6 +26,18 @@ export default async (req) => {
   }
 
   try {
+    if (b.file) {
+      const idx = messages.findIndex((m) => m.role === "user");
+      const doc = docBlock(b.file);
+      if (doc) {
+        if (idx >= 0) {
+          const orig = messages[idx].content;
+          messages[idx] = { role: "user", content: [doc, { type: "text", text: typeof orig === "string" ? orig : "Syllabus siehe Dokument." }] };
+        } else {
+          messages.unshift({ role: "user", content: [doc, { type: "text", text: "Syllabus siehe Dokument." }] });
+        }
+      }
+    }
     const { text } = await callClaude(null, { system, messages, maxTokens: 1500 });
     return Response.json({ reply: text }, { status: 200 });
   } catch (e) {

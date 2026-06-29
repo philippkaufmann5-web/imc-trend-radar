@@ -37,9 +37,12 @@ h1,h2,h3{letter-spacing:-.02em}
 
 /* hero header (MRSG look) */
 .hero{background:#0c5232;color:#fff}
-.hero__in{padding:32px 0 0}
+.hero__in{padding:30px 0 0 28px}
 .hero__eyebrow{margin:0 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#a8cdb6;font-weight:600}
-.hero__title{margin:0 0 10px;font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(26px,3.4vw,40px);letter-spacing:0;color:#fff}
+.hero__title{margin:0 0 10px;font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(22px,2.6vw,32px);letter-spacing:0;color:#fff}
+.relb{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;margin-left:6px;white-space:nowrap;font-style:normal}
+.relb.h{background:#dcefe2;color:#1c6b3c}
+.relb.m{background:#eef0ee;color:#6b756e}
 .hero__tasks{margin:0;font-size:14px;color:#8fcaa6;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.18)}
 
 /* cross-cluster horizontal */

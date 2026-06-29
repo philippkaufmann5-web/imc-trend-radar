@@ -13,11 +13,10 @@ export default async (req) => {
   if (!id) return new Response("id fehlt", { status: 400 });
   await setJob(id, { status: "running" });
 
-  (async () => {
-    try {
+  try {
       const content = [];
       content.push({ type: "text", text:
-`Du bist Curriculum-Expertin am IMC der Universität St.Gallen. Vergleiche unseren Syllabus für "${b.course || "die Weiterbildung"}" mit den Syllabi der Mitbewerber. Liefere eine sehr spezifische, gut begründete Analyse: Wo sind wir stark, wo schwach, wo bestehen inhaltliche Gaps? Beziehe dich konkret auf Module/Themen.
+`Du bist Curriculum-Expertin am IMC der Universität St.Gallen. Vergleiche unseren Syllabus${b.course ? ` für "${b.course}"` : ""} mit den Syllabi der Mitbewerber. Liefere eine sehr spezifische, gut begründete Analyse: Wo sind wir stark, wo schwach, wo bestehen inhaltliche Gaps? Beziehe dich konkret auf Module/Themen.
 
 Antworte AUSSCHLIESSLICH mit JSON:
 {"summary":"2-3 Sätze Gesamtbild",
@@ -31,16 +30,14 @@ Antworte AUSSCHLIESSLICH mit JSON:
 
       (b.competitors || []).forEach((comp, i) => {
         content.push({ type: "text", text: `=== MITBEWERBER ${i + 1}: ${comp.name || ""} ===` });
-        const d = docBlock(comp); if (d) content.push(d);
+        const dd = docBlock(comp); if (dd) content.push(dd);
       });
 
       const { text } = await callClaude(content, { maxTokens: 4000 });
       const result = extractJSON(text);
       await setJob(id, { status: "ready", finishedAt: new Date().toISOString(), result });
-    } catch (e) {
-      await setJob(id, { status: "error", error: String(e) });
-    }
-  })();
-
-  return new Response("accepted", { status: 202 });
+  } catch (e) {
+    await setJob(id, { status: "error", error: String(e).slice(0, 200) });
+  }
+  return new Response("done", { status: 202 });
 };

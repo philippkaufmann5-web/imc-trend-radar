@@ -32,17 +32,25 @@ export async function callClaude(content, options = {}) {
 
 // Helper: extract a JSON value (object or array) from a model reply.
 export function extractJSON(text) {
-  let t = String(text || "").trim().replace(/```json/gi, "").replace(/```/g, "");
-  const a = t.indexOf("["), b = t.lastIndexOf("]");
-  const o = t.indexOf("{"), p = t.lastIndexOf("}");
-  let start, end;
-  if (o !== -1 && (a === -1 || o < a)) { start = o; end = p; } else { start = a; end = b; }
-  if (start === -1 || end === -1) throw new Error("Kein JSON in der Antwort: " + t.slice(0, 140));
-  try {
-    return JSON.parse(t.slice(start, end + 1));
-  } catch (e) {
-    throw new Error("JSON ungültig: " + String(e).slice(0, 80) + " | Start: " + t.slice(start, start + 100));
+  let t = String(text || "").replace(/```json/gi, "").replace(/```/g, "");
+  const i = t.search(/[\[{]/);
+  if (i === -1) throw new Error("Kein JSON in der Antwort: " + t.slice(0, 140));
+  // Walk to the matching closing bracket, respecting strings/escapes.
+  let depth = 0, inStr = false, esc = false, end = -1;
+  for (let j = i; j < t.length; j++) {
+    const ch = t[j];
+    if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+    if (ch === '"') { inStr = true; continue; }
+    if (ch === "{" || ch === "[") depth++;
+    else if (ch === "}" || ch === "]") { depth--; if (depth === 0) { end = j; break; } }
   }
+  const slice = end !== -1 ? t.slice(i, end + 1) : t.slice(i);
+  const tryParse = (s) => { try { return JSON.parse(s); } catch { return null; } };
+  let v = tryParse(slice);
+  if (v !== null) return v;
+  v = tryParse(slice.replace(/,\s*([}\]])/g, "$1")); // remove trailing commas
+  if (v !== null) return v;
+  throw new Error("JSON ungültig: " + slice.slice(0, 120));
 }
 
 // Build a document content block from an uploaded file (base64).

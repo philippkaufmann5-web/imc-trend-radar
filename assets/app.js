@@ -34,7 +34,15 @@ let toastT; function toast(t){const e=$("#toast");e.textContent=t;e.classList.ad
 const spin='<span class="spin"></span> ';
 
 async function jget(u){try{const r=await fetch(u);return await r.json();}catch{return {};}}
-async function jpost(u,b){const r=await fetch(u,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(b)});return r.json().catch(()=>({}));}
+async function jpost(u,b){
+  try{
+    const r=await fetch(u,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(b)});
+    const txt=await r.text();
+    let j={}; try{ j=txt?JSON.parse(txt):{}; }catch{ j={error:(txt||("HTTP "+r.status)).slice(0,200)}; }
+    if(!r.ok && !j.error) j.error="HTTP "+r.status;
+    return j;
+  }catch(e){ return {error:"Netzwerkfehler: "+String(e).slice(0,140)}; }
+}
 function fileToB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res({filename:file.name,mediaType:file.type||"application/pdf",dataB64:String(r.result).split(",")[1]});r.onerror=rej;r.readAsDataURL(file);});}
 function srcLink(s){return s&&s.url?`<a class="src" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)} ↗</a>`:"";}
 
@@ -49,9 +57,10 @@ function initTabs(){
 }
 
 /* ================= MARKET RESEARCH ================= */
+function relBadge(r){ if(!r) return ""; const h=String(r).toLowerCase().startsWith("h"); return `<span class="relb ${h?"h":"m"}">${h?"Hoch":"Mittel"}</span>`; }
 function newsHTML(n){
   const meta=[n.competitor,n.date].filter(Boolean).map(esc).join(" · ");
-  return `<div class="news-item"><div class="t">${esc(n.title)}</div>${n.summary?`<div class="s">${esc(n.summary)}</div>`:""}${n.impact?`<div class="impact">→ ${esc(n.impact)}</div>`:""}<div class="m">${meta}${meta?" · ":""}${srcLink(n.source)}</div></div>`;
+  return `<div class="news-item"><div class="t">${esc(n.title)}${relBadge(n.relevance)}</div>${n.summary?`<div class="s">${esc(n.summary)}</div>`:""}${n.impact?`<div class="impact">→ ${esc(n.impact)}</div>`:""}<div class="m">${meta}${meta?" · ":""}${srcLink(n.source)}</div></div>`;
 }
 function renderMarket(data){
   const grid=$("#market-grid"); grid.innerHTML="";
@@ -73,8 +82,8 @@ function renderMarket(data){
   const hasCross=(cc.news&&cc.news.length)||(cc.trends&&cc.trends.length)||(cc.pestel&&cc.pestel.length);
   if(hasCross){
     const newsCol=(cc.news||[]).map(newsHTML).join("")||'<p class="empty">–</p>';
-    const trendCol=(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}</div>${t.impact?`<div class="impact">→ ${esc(t.impact)}</div>`:""}<div class="m">${esc(t.date||"")}${t.date?" · ":""}${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>';
-    const pestelCol=(cc.pestel||[]).map(p=>`<div class="news-item"><div class="t"><span class="ptag">${esc(p.category||"")}</span>${esc(p.point)}</div>${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""}<div class="m">${esc(p.date||"")}${p.date?" · ":""}${srcLink(p.source)}</div></div>`).join("")||'<p class="empty">–</p>';
+    const trendCol=(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}${relBadge(t.relevance)}</div>${t.impact?`<div class="impact">→ ${esc(t.impact)}</div>`:""}<div class="m">${esc(t.date||"")}${t.date?" · ":""}${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>';
+    const pestelCol=(cc.pestel||[]).map(p=>`<div class="news-item"><div class="t"><span class="ptag">${esc(p.category||"")}</span>${esc(p.point)}${relBadge(p.relevance)}</div>${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""}<div class="m">${esc(p.date||"")}${p.date?" · ":""}${srcLink(p.source)}</div></div>`).join("")||'<p class="empty">–</p>';
     box.innerHTML=`<div class="card cross" style="margin-bottom:20px"><div class="clabel"><h3>Clusterübergreifend</h3><span class="badge badge--news">betrifft alle Cluster</span></div>
       <div class="cross-grid">
         <div><div class="section-title">News</div>${newsCol}</div>
@@ -88,7 +97,7 @@ function renderMarket(data){
     const news=c.news||[]; const card=document.createElement("div"); card.className="card cluster-card";
     const newsHtml = news.length ? news.map(newsHTML).join("") : '<p class="empty">Keine News der letzten 21 Tage gefunden.</p>';
     const pestel=c.pestel||{};
-    const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)}${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
+    const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)}${relBadge(p.relevance)}${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
     card.innerHTML=`<div class="clabel"><h3>${esc(c.label)}</h3><span class="badge ${news.length?"badge--news":"badge--none"}">${news.length?news.length+" News":"keine News"}</span></div>
       <div class="section-title">Neuigkeiten</div>${newsHtml}
       <div class="section-title">PESTEL</div><div class="pestel">${pestelHtml||'<p class="empty">–</p>'}</div>${c.error?`<p class="form-msg err" style="margin-top:8px">Fehler: ${esc(c.error)}</p>`:""}`;
@@ -110,10 +119,10 @@ async function runMarket(){
     else if(n>=50){ toast("Dauert länger – bitte später neu laden."); clearInterval(iv); resetMarket(); }
   },6000);
 }
-function resetMarket(){ const b=$("#run-market"); b.disabled=false; b.textContent="Analyse jetzt starten"; marketPolling=false; }
+function resetMarket(){ const b=$("#run-market"); b.textContent="Analyse jetzt starten"; marketPolling=false; setRunBtn(); }
 
 function initSubClusters(){
-  $("#sub-clusters").innerHTML=CLUSTERS.map(c=>`<label style="display:block;font-size:13px;margin:3px 0"><input type="checkbox" value="${c.id}"> ${esc(c.label)}</label>`).join("");
+  $("#sub-clusters").innerHTML=CLUSTERS.map(c=>`<label style="display:block;font-size:13px;margin:3px 0"><input type="checkbox" value="${c.id}" checked> ${esc(c.label)}</label>`).join("");
 }
 async function subAdd(){
   const msg=$("#sub-msg"); msg.className="form-msg";
@@ -122,7 +131,7 @@ async function subAdd(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.className="form-msg err"; msg.textContent="Bitte gültige E-Mail."; return; }
   const r=await jpost("/api/subscriptions",{email,clusters});
   if(r.ok){ msg.className="form-msg ok"; msg.textContent="Suchabo aktiviert."; $("#sub-email").value=""; loadSubs(); }
-  else { msg.className="form-msg err"; msg.textContent=r.error||"Fehlgeschlagen (erst nach Deployment)."; }
+  else { msg.className="form-msg err"; msg.textContent=r.error||"Fehlgeschlagen."; }
 }
 
 /* ================= SYLLABUS ================= */
@@ -153,7 +162,7 @@ function renderSyllabus(r){
 }
 
 /* ================= SALES ================= */
-let salesChat=[], recog=null, recognizing=false;
+let salesChat=[], recog=null, recognizing=false, salesSylFile=null;
 function initSales(){
   fillCourseSelect($("#sales-course"),true);
   $("#run-sales").addEventListener("click",salesPrep);
@@ -162,6 +171,7 @@ function initSales(){
   $("#sales-course").addEventListener("change",salesGate);
   $("#sales-linkedin").addEventListener("input",salesGate);
   $("#sales-chat-input").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); if(!$("#sales-send").disabled) salesSend(); }});
+  dropZone($("#sales-syl-drop"),$("#sales-syl-file"),files=>{ salesSylFile=files[0]||null; $("#sales-syl-name").textContent=salesSylFile?salesSylFile.name:""; $("#sales-syl-drop").classList.toggle("has",!!salesSylFile); });
   initAudio(); salesGate();
 }
 function salesGate(){
@@ -171,32 +181,33 @@ function salesGate(){
   $("#sales-mic").disabled=!ready;
   $("#sales-course-label-a").textContent=course||"–";
   $("#sales-course-label-b").textContent=course||"–";
-  $("#sales-gate-note").textContent= ready ? "✓ Bereit – wählen Sie rechts Vorbereitung oder Übungsgespräch." : "Bitte zuerst Kurs wählen und LinkedIn-Infos einfügen.";
+  $("#sales-gate-note").textContent= ready ? "✓ Bereit – wählen Sie rechts Vorbereitung oder Übungsgespräch." : "Bitte zuerst Kurs wählen und personenbezogene Informationen einfügen.";
 }
 function salesCtx(){ return { course:$("#sales-course").value, linkedin:$("#sales-linkedin").value.trim(), syllabusText:$("#sales-syllabus").value.trim() }; }
+async function salesBody(extra){ const body={...salesCtx(),...extra}; if(salesSylFile){ try{ body.file=await fileToB64(salesSylFile); }catch{} } return body; }
 
 async function salesPrep(){
   const msg=$("#sales-msg"); msg.className="form-msg";
   const btn=$("#run-sales"); btn.disabled=true; btn.innerHTML=spin+"Erstelle …";
-  const r=await jpost("/api/sales",{mode:"prep",...salesCtx()});
+  const r=await jpost("/api/sales", await salesBody({mode:"prep"}));
   btn.disabled=false; btn.textContent="Vorbereitung erstellen"; salesGate();
   $("#sales-prep").innerHTML = r.reply
     ? `<h3>Gesprächsvorbereitung · ${esc($("#sales-course").value)}</h3><div style="white-space:pre-wrap;font-size:14px">${esc(r.reply)}</div>`
-    : `<p class="form-msg err">${esc(r.error||"Fehler (erst nach Deployment).")}</p>`;
+    : `<p class="form-msg err">${esc(r.error||"Unbekannter Fehler.")}</p>`;
 }
 function pushMsg(role,text){ const log=$("#sales-log"); const d=document.createElement("div"); d.className="msg "+(role==="user"?"user":"bot"); d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; }
 async function salesStart(){
   salesChat=[]; $("#sales-log").innerHTML="";
   const btn=$("#sales-start"); btn.disabled=true; btn.innerHTML=spin+"…";
-  const r=await jpost("/api/sales",{mode:"roleplay",...salesCtx(),messages:[]});
+  const r=await jpost("/api/sales", await salesBody({mode:"roleplay",messages:[]}));
   btn.disabled=false; btn.textContent="Übungsgespräch neu starten";
   if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); speak(r.reply); }
-  else toast(r.error||"Fehler (erst nach Deployment).");
+  else toast(r.error||"Fehler.");
 }
 async function salesSend(){
   const inp=$("#sales-chat-input"); const t=inp.value.trim(); if(!t) return;
   inp.value=""; pushMsg("user",t); salesChat.push({role:"user",content:t});
-  const r=await jpost("/api/sales",{mode:"roleplay",...salesCtx(),messages:salesChat});
+  const r=await jpost("/api/sales", await salesBody({mode:"roleplay",messages:salesChat}));
   if(r.reply){ salesChat.push({role:"assistant",content:r.reply}); pushMsg("bot",r.reply); speak(r.reply); }
   else toast(r.error||"Fehler.");
 }
@@ -264,15 +275,23 @@ async function loadSettings(){
 }
 function updateAutoIndicator(){
   const v=(settings&&settings.autoMarket)||"off";
-  const el=$("#market-auto"); if(!el) return;
-  el.textContent={off:"Auto: aus",weekly:"Auto: alle 7 Tage",monthly:"Auto: alle 30 Tage"}[v];
-  el.className="badge "+(v==="off"?"badge--none":"badge--news");
+  const el=$("#market-auto"); if(el){
+    el.textContent={off:"Auto: aus",weekly:"Auto: alle 7 Tage",monthly:"Auto: alle 30 Tage"}[v];
+    el.className="badge "+(v==="off"?"badge--none":"badge--news");
+  }
+  setRunBtn();
+}
+function setRunBtn(){
+  const b=$("#run-market"); if(!b) return;
+  const autoOn=settings&&settings.autoMarket&&settings.autoMarket!=="off";
+  b.disabled = !!autoOn || marketPolling;
+  b.title = autoOn ? "Automatische Analyse aktiv – manueller Start deaktiviert" : "";
 }
 async function saveSettings(){
   const msg=$("#set-msg"); msg.className="form-msg";
   const r=await jpost("/api/settings",{model:$("#set-model").value,autoMarket:$("#set-auto").value});
   if(r.model){ settings=r; msg.className="form-msg ok"; msg.textContent="Gespeichert."; updateAutoIndicator(); }
-  else { msg.className="form-msg err"; msg.textContent=r.error||"Fehler (erst nach Deployment)."; }
+  else { msg.className="form-msg err"; msg.textContent=r.error||"Fehler."; }
 }
 async function loadSubs(){
   const list=await jget("/api/subscriptions").catch(()=>[]);

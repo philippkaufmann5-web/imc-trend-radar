@@ -85,9 +85,14 @@
       <h3>1 · Kontext <span class="note">– gilt für Vorbereitung und Übungsgespräch</span></h3>
       <div class="row2" style="margin-top:12px">
         <div class="field"><label>Kurs *</label><select id="sales-course"></select></div>
-        <div class="field"><label>LinkedIn-Infos * (Copy &amp; Paste)</label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, Position …"></textarea></div>
+        <div class="field"><label>Personenbezogene Informationen * <span class="note">(LinkedIn, Mailverlauf etc.)</span></label><textarea id="sales-linkedin" placeholder="Profiltext, Werdegang, bisheriger Mailverlauf …"></textarea></div>
       </div>
-      <div class="field"><label>Syllabus-Text (optional, erhöht die Genauigkeit)</label><textarea id="sales-syllabus" placeholder="Optional: Syllabus/Modulinhalte einfügen"></textarea></div>
+      <div class="field"><label>Syllabus (optional, erhöht die Genauigkeit)</label>
+        <textarea id="sales-syllabus" placeholder="Syllabus-Text einfügen … oder unten ein PDF hochladen"></textarea>
+        <div class="drop" id="sales-syl-drop" style="margin-top:8px">Syllabus-PDF hierher ziehen oder klicken</div>
+        <input type="file" id="sales-syl-file" accept="application/pdf" hidden/>
+        <div class="filelist" id="sales-syl-name"></div>
+      </div>
       <p class="note" id="sales-gate-note">Bitte zuerst Kurs wählen und LinkedIn-Infos einfügen.</p>
     </div>
 
