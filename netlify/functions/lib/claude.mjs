@@ -32,12 +32,17 @@ export async function callClaude(content, options = {}) {
 
 // Helper: extract a JSON value (object or array) from a model reply.
 export function extractJSON(text) {
-  const a = text.indexOf("["), b = text.lastIndexOf("]");
-  const o = text.indexOf("{"), p = text.lastIndexOf("}");
+  let t = String(text || "").trim().replace(/```json/gi, "").replace(/```/g, "");
+  const a = t.indexOf("["), b = t.lastIndexOf("]");
+  const o = t.indexOf("{"), p = t.lastIndexOf("}");
   let start, end;
-  if (a !== -1 && (o === -1 || a < o)) { start = a; end = b; } else { start = o; end = p; }
-  if (start === -1 || end === -1) throw new Error("Kein JSON gefunden.");
-  return JSON.parse(text.slice(start, end + 1));
+  if (o !== -1 && (a === -1 || o < a)) { start = o; end = p; } else { start = a; end = b; }
+  if (start === -1 || end === -1) throw new Error("Kein JSON in der Antwort: " + t.slice(0, 140));
+  try {
+    return JSON.parse(t.slice(start, end + 1));
+  } catch (e) {
+    throw new Error("JSON ungültig: " + String(e).slice(0, 80) + " | Start: " + t.slice(start, start + 100));
+  }
 }
 
 // Build a document content block from an uploaded file (base64).

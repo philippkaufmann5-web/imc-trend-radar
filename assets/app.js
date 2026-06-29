@@ -60,8 +60,16 @@ function renderMarket(data){
   if(data.status==="running"){ $("#market-last").textContent="Analyse läuft …"; return; }
   $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleString("de-CH") : "";
 
-  // cross-cluster first, horizontal (News | Trends | PESTEL)
+  // surface errors / diagnostics
   const cc=data.crossCluster||{};
+  const errs=[]; (data.clusters||[]).forEach(c=>{ if(c.error) errs.push(c.label+": "+c.error); }); if(cc.error) errs.push("Übergreifend: "+cc.error);
+  const banner=$("#market-banner");
+  if(data.note || errs.length){
+    banner.className="banner show";
+    banner.innerHTML=esc(data.note||"Einige Abfragen meldeten einen Fehler.")+(errs.length?`<div class="note" style="margin-top:6px">${errs.map(esc).join("<br>")}</div>`:"");
+  } else banner.className="banner";
+
+  // cross-cluster first, horizontal (News | Trends | PESTEL)
   const hasCross=(cc.news&&cc.news.length)||(cc.trends&&cc.trends.length)||(cc.pestel&&cc.pestel.length);
   if(hasCross){
     const newsCol=(cc.news||[]).map(newsHTML).join("")||'<p class="empty">–</p>';
@@ -83,7 +91,7 @@ function renderMarket(data){
     const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)}${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
     card.innerHTML=`<div class="clabel"><h3>${esc(c.label)}</h3><span class="badge ${news.length?"badge--news":"badge--none"}">${news.length?news.length+" News":"keine News"}</span></div>
       <div class="section-title">Neuigkeiten</div>${newsHtml}
-      <div class="section-title">PESTEL</div><div class="pestel">${pestelHtml||'<p class="empty">–</p>'}</div>`;
+      <div class="section-title">PESTEL</div><div class="pestel">${pestelHtml||'<p class="empty">–</p>'}</div>${c.error?`<p class="form-msg err" style="margin-top:8px">Fehler: ${esc(c.error)}</p>`:""}`;
     grid.appendChild(card);
   });
 }
@@ -97,7 +105,7 @@ async function runMarket(){
   try{ await fetch("/api/analyze-market",{method:"POST"}); }catch{ toast("Start fehlgeschlagen."); resetMarket(); return; }
   let n=0; const iv=setInterval(async()=>{ n++;
     const d=await jget("/api/market");
-    if(d.status==="ready"&&d.generatedAt!==before){ renderMarket(d); $("#market-banner").className="banner"; toast("Analyse fertig."); clearInterval(iv); resetMarket(); }
+    if(d.status==="ready"&&d.generatedAt!==before){ renderMarket(d); toast("Analyse fertig."); clearInterval(iv); resetMarket(); }
     else if(d.status==="error"){ toast("Analyse-Fehler."); clearInterval(iv); resetMarket(); }
     else if(n>=50){ toast("Dauert länger – bitte später neu laden."); clearInterval(iv); resetMarket(); }
   },6000);

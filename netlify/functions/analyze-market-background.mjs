@@ -19,15 +19,19 @@ Suche im Web nach:
 1) NEUIGKEITEN (max. 21 Tage alt): neue Weiterbildungs-Angebote, Programme oder relevante Veranstaltungen von MITBEWERBERN im DACH-Raum (${c.competitorsHint}). Nur Einträge mit erkennbarem Datum innerhalb der letzten 21 Tage.
 2) PESTEL-Analyse (Quellen/Entwicklungen aus den letzten 12 Monaten) mit Bezug zur Weiterbildung in diesem Bereich, inkl. relevanter TRENDS (z. B. Online-Buchung von Weiterbildungen, KI, Förderlandschaft).
 
-Antworte AUSSCHLIESSLICH mit JSON (kein Markdown):
+Antworte AUSSCHLIESSLICH mit gültigem JSON (kein Markdown, KEINE Auslassungen wie "..."). Struktur:
 {
- "news": [{"title":"","date":"YYYY-MM-DD","summary":"1-2 Sätze","impact":"kurz & prägnant (max. 1 Satz): wie könnte das unsere Weiterbildung beeinflussen?","competitor":"","source":{"title":"","url":"https://..."}}],
+ "news": [ {"title":"Titel","date":"YYYY-MM-DD","summary":"1-2 Sätze","impact":"max. 1 Satz: wie beeinflusst das unsere Weiterbildung?","competitor":"Anbieter","source":{"title":"Quelle","url":"https://..."}} ],
  "pestel": {
-   "Politisch":[{"point":"","impact":"kurz (max. 1 Satz): Auswirkung auf die Weiterbildung","source":{"title":"","url":""}}],
-   "Ökonomisch":[...], "Sozial":[...], "Technologisch":[...], "Ökologisch":[...], "Rechtlich":[...]
+   "Politisch": [ {"point":"Aussage","impact":"max. 1 Satz","source":{"title":"Quelle","url":"https://..."}} ],
+   "Ökonomisch": [],
+   "Sozial": [],
+   "Technologisch": [],
+   "Ökologisch": [],
+   "Rechtlich": []
  }
 }
-Jeder Punkt MUSS eine prüfbare Quelle mit URL und ein kurzes "impact"-Feld haben. Wenn es keine echten News <21 Tage gibt, gib "news":[] zurück (nichts erfinden).`;
+Fülle JEDE PESTEL-Kategorie mit 1-3 echten Punkten in genau dieser Objektstruktur. Verwende niemals "..." im Output. Jeder Punkt braucht eine echte Quelle mit URL. Wenn es keine echten News der letzten 21 Tage gibt: "news": [].`;
 }
 
 const crossPrompt = `Heutiges Datum: ${today()}. Für das IMC der Universität St.Gallen: Suche im Web nach Entwicklungen, die ALLE Weiterbildungsbereiche (Marketing, Sales, Kommunikation, Einkauf) ZUGLEICH betreffen – z. B. eine Schweizer Hochschule gründet ein neues Institut, neue Akkreditierungs-/Förderregeln, übergreifende Markttrends in der Executive Education (Online-Buchung von Weiterbildungen, KI-Tutoren, Preise, demografische Entwicklung).
@@ -40,9 +44,9 @@ Nur echte, prüfbare Quellen mit URL und Datum (News max. 21 Tage; Trends/PESTEL
 
 async function safeJSON(promptText) {
   try {
-    const { text } = await callClaude(promptText, { web: 6, maxTokens: 4000 });
+    const { text } = await callClaude(promptText, { web: 5, maxTokens: 5000 });
     return extractJSON(text);
-  } catch (e) { return { error: String(e) }; }
+  } catch (e) { return { error: String(e).slice(0, 200) }; }
 }
 
 function countNews(payload) {
@@ -66,11 +70,13 @@ export default async () => {
       error: results[i].error,
     }));
 
+    const anyError = clusters.some((c) => c.error) || cross.error;
     const payload = {
       status: "ready",
       generatedAt: new Date().toISOString(),
       clusters,
-      crossCluster: { news: cross.news || [], trends: cross.trends || [], pestel: cross.pestel || [] },
+      crossCluster: { news: cross.news || [], trends: cross.trends || [], pestel: cross.pestel || [], error: cross.error },
+      note: anyError ? "Mindestens eine Abfrage meldete einen Fehler. Häufigste Ursache: Web Search ist in der Claude Console nicht aktiviert." : null,
     };
     if (await getJSON("market:latest")) await setJSON("market:prev", payload);
     await setJSON("market:latest", payload);
