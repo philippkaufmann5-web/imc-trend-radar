@@ -25,12 +25,29 @@ h1,h2,h3{letter-spacing:-.02em}
 .brand b{font-weight:600}
 
 /* tabs */
-.tabs{background:var(--green-deep);position:sticky;top:0;z-index:30}
-.tabs__in{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs{background:var(--surface);position:sticky;top:0;z-index:30;border-bottom:1px solid var(--line)}
+.tabs__in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 .tabs__in::-webkit-scrollbar{display:none}
-.tab{flex:none;background:none;border:none;color:#bfe0cd;padding:15px 18px;font-size:14px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
-.tab:hover{color:#fff}
-.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--green-bright)}
+.tab{flex:none;background:none;border:none;color:var(--muted);padding:15px 16px;font-size:14px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--green-dark);border-bottom-color:var(--green)}
+.tab--muted{color:#aab4ad;opacity:.65}
+.tab--muted:hover{color:var(--muted)}
+.tab--muted[aria-selected="true"]{color:var(--green-dark);opacity:1;border-bottom-color:var(--green)}
+
+/* hero header (MRSG look) */
+.hero{background:#0c5232;color:#fff}
+.hero__in{padding:32px 0 0}
+.hero__eyebrow{margin:0 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#a8cdb6;font-weight:600}
+.hero__title{margin:0 0 10px;font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(26px,3.4vw,40px);letter-spacing:0;color:#fff}
+.hero__tasks{margin:0;font-size:14px;color:#8fcaa6;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.18)}
+
+/* cross-cluster horizontal */
+.cross-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.cross-grid>div .section-title{margin-top:0}
+.impact{font-size:12.5px;color:var(--green-dark);font-style:italic;margin:3px 0}
+.ptag{font-size:10.5px;font-weight:600;color:#fff;background:var(--green);border-radius:4px;padding:1px 6px;margin-right:4px;font-style:normal;white-space:nowrap}
+@media(max-width:820px){.cross-grid{grid-template-columns:1fr}}
 
 /* panel header */
 .panel{display:none;padding:30px 0 70px}

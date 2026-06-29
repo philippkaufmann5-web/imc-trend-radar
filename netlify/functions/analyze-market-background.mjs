@@ -21,20 +21,22 @@ Suche im Web nach:
 
 Antworte AUSSCHLIESSLICH mit JSON (kein Markdown):
 {
- "news": [{"title":"","date":"YYYY-MM-DD","summary":"1-2 Sätze","competitor":"","source":{"title":"","url":"https://..."}}],
+ "news": [{"title":"","date":"YYYY-MM-DD","summary":"1-2 Sätze","impact":"kurz & prägnant (max. 1 Satz): wie könnte das unsere Weiterbildung beeinflussen?","competitor":"","source":{"title":"","url":"https://..."}}],
  "pestel": {
-   "Politisch":[{"point":"","source":{"title":"","url":""}}],
+   "Politisch":[{"point":"","impact":"kurz (max. 1 Satz): Auswirkung auf die Weiterbildung","source":{"title":"","url":""}}],
    "Ökonomisch":[...], "Sozial":[...], "Technologisch":[...], "Ökologisch":[...], "Rechtlich":[...]
  }
 }
-Jeder Punkt MUSS eine prüfbare Quelle mit URL haben. Wenn es keine echten News <21 Tage gibt, gib "news":[] zurück (nichts erfinden).`;
+Jeder Punkt MUSS eine prüfbare Quelle mit URL und ein kurzes "impact"-Feld haben. Wenn es keine echten News <21 Tage gibt, gib "news":[] zurück (nichts erfinden).`;
 }
 
-const crossPrompt = `Heutiges Datum: ${today()}. Für das IMC der Universität St.Gallen: Suche im Web nach Entwicklungen, die ALLE Weiterbildungsbereiche (Marketing, Sales, Kommunikation, Einkauf) zugleich betreffen – z. B. eine Schweizer Hochschule gründet ein neues Institut, neue Akkreditierungs-/Förderregeln, übergreifende Markttrends in der Executive Education (z. B. Online-Buchung, KI-Tutoren, Preise).
+const crossPrompt = `Heutiges Datum: ${today()}. Für das IMC der Universität St.Gallen: Suche im Web nach Entwicklungen, die ALLE Weiterbildungsbereiche (Marketing, Sales, Kommunikation, Einkauf) ZUGLEICH betreffen – z. B. eine Schweizer Hochschule gründet ein neues Institut, neue Akkreditierungs-/Förderregeln, übergreifende Markttrends in der Executive Education (Online-Buchung von Weiterbildungen, KI-Tutoren, Preise, demografische Entwicklung).
+WICHTIG: Nimm NUR Einträge auf, die wirklich ALLE Bereiche betreffen. Wenn ein Punkt klar zu EINEM Bereich gehört (z. B. "Nachfrage nach KI-Skills besonders im Marketing"), gehört er NICHT hierher – lass ihn weg.
 Antworte AUSSCHLIESSLICH mit JSON:
-{"news":[{"title":"","date":"YYYY-MM-DD","summary":"","source":{"title":"","url":""}}],
- "trends":[{"point":"","source":{"title":"","url":""}}]}
-Nur echte, prüfbare Quellen mit URL und Datum (News max. 21 Tage; Trends max. 12 Monate).`;
+{"news":[{"title":"","date":"YYYY-MM-DD","summary":"","impact":"kurz (max. 1 Satz): Auswirkung auf unsere Weiterbildungen","source":{"title":"","url":""}}],
+ "trends":[{"point":"","date":"YYYY-MM-DD","impact":"kurz (max. 1 Satz)","source":{"title":"","url":""}}],
+ "pestel":[{"category":"Politisch|Ökonomisch|Sozial|Technologisch|Ökologisch|Rechtlich","point":"","date":"YYYY-MM-DD","impact":"kurz (max. 1 Satz)","source":{"title":"","url":""}}]}
+Nur echte, prüfbare Quellen mit URL und Datum (News max. 21 Tage; Trends/PESTEL Aktualität max. 12 Monate).`;
 
 async function safeJSON(promptText) {
   try {
@@ -68,7 +70,7 @@ export default async () => {
       status: "ready",
       generatedAt: new Date().toISOString(),
       clusters,
-      crossCluster: { news: cross.news || [], trends: cross.trends || [] },
+      crossCluster: { news: cross.news || [], trends: cross.trends || [], pestel: cross.pestel || [] },
     };
     if (await getJSON("market:latest")) await setJSON("market:prev", payload);
     await setJSON("market:latest", payload);

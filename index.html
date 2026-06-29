@@ -10,8 +10,10 @@
 <link rel="stylesheet" href="/assets/styles.css"/>
 </head>
 <body>
-<header class="topbar"><div class="wrap topbar__in">
-  <div class="brand"><span class="brand__mark"></span><span><b>IMC Research Hub</b><small>Institut für Marketing und Customer Insight · HSG</small></span></div>
+<header class="hero"><div class="wrap hero__in">
+  <p class="hero__eyebrow">Universität St.Gallen</p>
+  <h1 class="hero__title">IMC Assistant</h1>
+  <p class="hero__tasks">Mitbewerber-News &amp; PESTEL · Syllabus-Vergleich · Verkaufsgespräche vorbereiten · Referent:innen finden</p>
 </div></header>
 
 <nav class="tabs"><div class="wrap tabs__in" id="tabs" role="tablist">
@@ -20,7 +22,7 @@
   <button class="tab" role="tab" data-tab="sales" aria-selected="false">Sales Assistant</button>
   <button class="tab" role="tab" data-tab="bpm" aria-selected="false">BPM Finder</button>
   <button class="tab" role="tab" data-tab="mrsg" aria-selected="false">MRSG</button>
-  <button class="tab" role="tab" data-tab="settings" aria-selected="false">Einstellungen</button>
+  <button class="tab tab--muted" role="tab" data-tab="settings" aria-selected="false">Einstellungen</button>
 </div></nav>
 
 <main class="wrap">
@@ -34,8 +36,8 @@
       <button class="btn btn--primary" id="run-market">Analyse jetzt starten</button>
       <span class="meta" id="market-last">Noch keine Analyse durchgeführt.</span>
     </div>
-    <div class="grid" id="market-grid"></div>
     <div id="cross-cluster"></div>
+    <div class="grid" id="market-grid"></div>
 
     <div class="card" style="margin-top:26px">
       <h3>Suchabo anlegen</h3>

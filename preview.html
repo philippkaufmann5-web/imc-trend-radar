@@ -35,12 +35,29 @@ h1,h2,h3{letter-spacing:-.02em}
 .brand b{font-weight:600}
 
 /* tabs */
-.tabs{background:var(--green-deep);position:sticky;top:0;z-index:30}
-.tabs__in{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs{background:var(--surface);position:sticky;top:0;z-index:30;border-bottom:1px solid var(--line)}
+.tabs__in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 .tabs__in::-webkit-scrollbar{display:none}
-.tab{flex:none;background:none;border:none;color:#bfe0cd;padding:15px 18px;font-size:14px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
-.tab:hover{color:#fff}
-.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--green-bright)}
+.tab{flex:none;background:none;border:none;color:var(--muted);padding:15px 16px;font-size:14px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--green-dark);border-bottom-color:var(--green)}
+.tab--muted{color:#aab4ad;opacity:.65}
+.tab--muted:hover{color:var(--muted)}
+.tab--muted[aria-selected="true"]{color:var(--green-dark);opacity:1;border-bottom-color:var(--green)}
+
+/* hero header (MRSG look) */
+.hero{background:#0c5232;color:#fff}
+.hero__in{padding:32px 0 0}
+.hero__eyebrow{margin:0 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#a8cdb6;font-weight:600}
+.hero__title{margin:0 0 10px;font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(26px,3.4vw,40px);letter-spacing:0;color:#fff}
+.hero__tasks{margin:0;font-size:14px;color:#8fcaa6;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.18)}
+
+/* cross-cluster horizontal */
+.cross-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.cross-grid>div .section-title{margin-top:0}
+.impact{font-size:12.5px;color:var(--green-dark);font-style:italic;margin:3px 0}
+.ptag{font-size:10.5px;font-weight:600;color:#fff;background:var(--green);border-radius:4px;padding:1px 6px;margin-right:4px;font-style:normal;white-space:nowrap}
+@media(max-width:820px){.cross-grid{grid-template-columns:1fr}}
 
 /* panel header */
 .panel{display:none;padding:30px 0 70px}
@@ -155,8 +172,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
 </style>
 </head>
 <body>
-<header class="topbar"><div class="wrap topbar__in">
-  <div class="brand"><span class="brand__mark"></span><span><b>IMC Research Hub</b><small>Institut für Marketing und Customer Insight · HSG</small></span></div>
+<header class="hero"><div class="wrap hero__in">
+  <p class="hero__eyebrow">Universität St.Gallen</p>
+  <h1 class="hero__title">IMC Assistant</h1>
+  <p class="hero__tasks">Mitbewerber-News &amp; PESTEL · Syllabus-Vergleich · Verkaufsgespräche vorbereiten · Referent:innen finden</p>
 </div></header>
 
 <nav class="tabs"><div class="wrap tabs__in" id="tabs" role="tablist">
@@ -165,7 +184,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
   <button class="tab" role="tab" data-tab="sales" aria-selected="false">Sales Assistant</button>
   <button class="tab" role="tab" data-tab="bpm" aria-selected="false">BPM Finder</button>
   <button class="tab" role="tab" data-tab="mrsg" aria-selected="false">MRSG</button>
-  <button class="tab" role="tab" data-tab="settings" aria-selected="false">Einstellungen</button>
+  <button class="tab tab--muted" role="tab" data-tab="settings" aria-selected="false">Einstellungen</button>
 </div></nav>
 
 <main class="wrap">
@@ -179,8 +198,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);b
       <button class="btn btn--primary" id="run-market">Analyse jetzt starten</button>
       <span class="meta" id="market-last">Noch keine Analyse durchgeführt.</span>
     </div>
-    <div class="grid" id="market-grid"></div>
     <div id="cross-cluster"></div>
+    <div class="grid" id="market-grid"></div>
 
     <div class="card" style="margin-top:26px">
       <h3>Suchabo anlegen</h3>
@@ -365,28 +384,43 @@ function initTabs(){
 }
 
 /* ================= MARKET RESEARCH ================= */
+function newsHTML(n){
+  const meta=[n.competitor,n.date].filter(Boolean).map(esc).join(" · ");
+  return `<div class="news-item"><div class="t">${esc(n.title)}</div>${n.summary?`<div class="s">${esc(n.summary)}</div>`:""}${n.impact?`<div class="impact">→ ${esc(n.impact)}</div>`:""}<div class="m">${meta}${meta?" · ":""}${srcLink(n.source)}</div></div>`;
+}
 function renderMarket(data){
   const grid=$("#market-grid"); grid.innerHTML="";
+  const box=$("#cross-cluster"); box.innerHTML="";
   if(!data || data.status==="empty" || !data.clusters){ grid.innerHTML='<p class="empty">Noch keine Daten – starten Sie eine Analyse.</p>'; return; }
   if(data.status==="running"){ $("#market-last").textContent="Analyse läuft …"; return; }
   $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleString("de-CH") : "";
+
+  // cross-cluster first, horizontal (News | Trends | PESTEL)
+  const cc=data.crossCluster||{};
+  const hasCross=(cc.news&&cc.news.length)||(cc.trends&&cc.trends.length)||(cc.pestel&&cc.pestel.length);
+  if(hasCross){
+    const newsCol=(cc.news||[]).map(newsHTML).join("")||'<p class="empty">–</p>';
+    const trendCol=(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}</div>${t.impact?`<div class="impact">→ ${esc(t.impact)}</div>`:""}<div class="m">${esc(t.date||"")}${t.date?" · ":""}${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>';
+    const pestelCol=(cc.pestel||[]).map(p=>`<div class="news-item"><div class="t"><span class="ptag">${esc(p.category||"")}</span>${esc(p.point)}</div>${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""}<div class="m">${esc(p.date||"")}${p.date?" · ":""}${srcLink(p.source)}</div></div>`).join("")||'<p class="empty">–</p>';
+    box.innerHTML=`<div class="card cross" style="margin-bottom:20px"><div class="clabel"><h3>Clusterübergreifend</h3><span class="badge badge--news">betrifft alle Cluster</span></div>
+      <div class="cross-grid">
+        <div><div class="section-title">News</div>${newsCol}</div>
+        <div><div class="section-title">Trends</div>${trendCol}</div>
+        <div><div class="section-title">PESTEL</div>${pestelCol}</div>
+      </div></div>`;
+  }
+
+  // per-cluster
   (data.clusters||[]).forEach(c=>{
     const news=c.news||[]; const card=document.createElement("div"); card.className="card cluster-card";
-    const newsHtml = news.length ? news.map(n=>`<div class="news-item"><div class="t">${esc(n.title)}</div><div class="s">${esc(n.summary)}</div><div class="m">${esc(n.competitor||"")} · ${esc(n.date||"")} · ${srcLink(n.source)}</div></div>`).join("")
-      : '<p class="empty">Keine News der letzten 21 Tage gefunden.</p>';
+    const newsHtml = news.length ? news.map(newsHTML).join("") : '<p class="empty">Keine News der letzten 21 Tage gefunden.</p>';
     const pestel=c.pestel||{};
-    const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
+    const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)}${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
     card.innerHTML=`<div class="clabel"><h3>${esc(c.label)}</h3><span class="badge ${news.length?"badge--news":"badge--none"}">${news.length?news.length+" News":"keine News"}</span></div>
       <div class="section-title">Neuigkeiten</div>${newsHtml}
       <div class="section-title">PESTEL</div><div class="pestel">${pestelHtml||'<p class="empty">–</p>'}</div>`;
     grid.appendChild(card);
   });
-  const cc=data.crossCluster||{}; const box=$("#cross-cluster");
-  if((cc.news&&cc.news.length)||(cc.trends&&cc.trends.length)){
-    box.innerHTML=`<div class="card" style="margin-top:18px"><div class="clabel"><h3>Clusterübergreifend</h3><span class="badge badge--news">betrifft alle</span></div>
-      <div class="section-title">News</div>${(cc.news||[]).map(n=>`<div class="news-item"><div class="t">${esc(n.title)}</div><div class="s">${esc(n.summary)}</div><div class="m">${esc(n.date||"")} · ${srcLink(n.source)}</div></div>`).join("")||'<p class="empty">–</p>'}
-      <div class="section-title">Trends</div>${(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}</div><div class="m">${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>'}</div>`;
-  } else box.innerHTML="";
 }
 async function loadMarket(){ renderMarket(await jget("/api/market")); }
 let marketPolling=false;

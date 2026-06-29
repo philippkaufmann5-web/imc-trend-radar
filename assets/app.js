@@ -49,28 +49,43 @@ function initTabs(){
 }
 
 /* ================= MARKET RESEARCH ================= */
+function newsHTML(n){
+  const meta=[n.competitor,n.date].filter(Boolean).map(esc).join(" · ");
+  return `<div class="news-item"><div class="t">${esc(n.title)}</div>${n.summary?`<div class="s">${esc(n.summary)}</div>`:""}${n.impact?`<div class="impact">→ ${esc(n.impact)}</div>`:""}<div class="m">${meta}${meta?" · ":""}${srcLink(n.source)}</div></div>`;
+}
 function renderMarket(data){
   const grid=$("#market-grid"); grid.innerHTML="";
+  const box=$("#cross-cluster"); box.innerHTML="";
   if(!data || data.status==="empty" || !data.clusters){ grid.innerHTML='<p class="empty">Noch keine Daten – starten Sie eine Analyse.</p>'; return; }
   if(data.status==="running"){ $("#market-last").textContent="Analyse läuft …"; return; }
   $("#market-last").textContent = data.generatedAt ? "Zuletzt: "+new Date(data.generatedAt).toLocaleString("de-CH") : "";
+
+  // cross-cluster first, horizontal (News | Trends | PESTEL)
+  const cc=data.crossCluster||{};
+  const hasCross=(cc.news&&cc.news.length)||(cc.trends&&cc.trends.length)||(cc.pestel&&cc.pestel.length);
+  if(hasCross){
+    const newsCol=(cc.news||[]).map(newsHTML).join("")||'<p class="empty">–</p>';
+    const trendCol=(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}</div>${t.impact?`<div class="impact">→ ${esc(t.impact)}</div>`:""}<div class="m">${esc(t.date||"")}${t.date?" · ":""}${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>';
+    const pestelCol=(cc.pestel||[]).map(p=>`<div class="news-item"><div class="t"><span class="ptag">${esc(p.category||"")}</span>${esc(p.point)}</div>${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""}<div class="m">${esc(p.date||"")}${p.date?" · ":""}${srcLink(p.source)}</div></div>`).join("")||'<p class="empty">–</p>';
+    box.innerHTML=`<div class="card cross" style="margin-bottom:20px"><div class="clabel"><h3>Clusterübergreifend</h3><span class="badge badge--news">betrifft alle Cluster</span></div>
+      <div class="cross-grid">
+        <div><div class="section-title">News</div>${newsCol}</div>
+        <div><div class="section-title">Trends</div>${trendCol}</div>
+        <div><div class="section-title">PESTEL</div>${pestelCol}</div>
+      </div></div>`;
+  }
+
+  // per-cluster
   (data.clusters||[]).forEach(c=>{
     const news=c.news||[]; const card=document.createElement("div"); card.className="card cluster-card";
-    const newsHtml = news.length ? news.map(n=>`<div class="news-item"><div class="t">${esc(n.title)}</div><div class="s">${esc(n.summary)}</div><div class="m">${esc(n.competitor||"")} · ${esc(n.date||"")} · ${srcLink(n.source)}</div></div>`).join("")
-      : '<p class="empty">Keine News der letzten 21 Tage gefunden.</p>';
+    const newsHtml = news.length ? news.map(newsHTML).join("") : '<p class="empty">Keine News der letzten 21 Tage gefunden.</p>';
     const pestel=c.pestel||{};
-    const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
+    const pestelHtml=PESTEL.map(k=>{const arr=pestel[k]||[];return arr.length?`<details><summary>${k}<span class="note">${arr.length}</span></summary><div class="pbody">${arr.map(p=>`<div>${esc(p.point)}${p.impact?`<div class="impact">→ ${esc(p.impact)}</div>`:""} ${srcLink(p.source)}</div>`).join("")}</div></details>`:"";}).join("");
     card.innerHTML=`<div class="clabel"><h3>${esc(c.label)}</h3><span class="badge ${news.length?"badge--news":"badge--none"}">${news.length?news.length+" News":"keine News"}</span></div>
       <div class="section-title">Neuigkeiten</div>${newsHtml}
       <div class="section-title">PESTEL</div><div class="pestel">${pestelHtml||'<p class="empty">–</p>'}</div>`;
     grid.appendChild(card);
   });
-  const cc=data.crossCluster||{}; const box=$("#cross-cluster");
-  if((cc.news&&cc.news.length)||(cc.trends&&cc.trends.length)){
-    box.innerHTML=`<div class="card" style="margin-top:18px"><div class="clabel"><h3>Clusterübergreifend</h3><span class="badge badge--news">betrifft alle</span></div>
-      <div class="section-title">News</div>${(cc.news||[]).map(n=>`<div class="news-item"><div class="t">${esc(n.title)}</div><div class="s">${esc(n.summary)}</div><div class="m">${esc(n.date||"")} · ${srcLink(n.source)}</div></div>`).join("")||'<p class="empty">–</p>'}
-      <div class="section-title">Trends</div>${(cc.trends||[]).map(t=>`<div class="news-item"><div class="t">${esc(t.point)}</div><div class="m">${srcLink(t.source)}</div></div>`).join("")||'<p class="empty">–</p>'}</div>`;
-  } else box.innerHTML="";
 }
 async function loadMarket(){ renderMarket(await jget("/api/market")); }
 let marketPolling=false;
